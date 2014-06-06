@@ -3,6 +3,24 @@ package com.pki.test.imageHistComparer.histogram;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.util.Arrays;
+import java.util.HashMap;
+
+import static com.pki.test.imageHistComparer.histogram.Utilities.RAD_TO_INTEGRAL_DEGREES ;
+//What entropy means to me:
+import static com.pki.test.imageHistComparer.histogram.Utilities.LN2 ;
+
+import static com.pki.test.imageHistComparer.histogram.Utilities.PADDED ;
+
+//I want to use an enum, since an integer is too specific and not descriptive enough,
+//but I don't want to index by arbitrary String instances:
+import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramScale.COARSE ;
+import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramScale.FINE ;
+import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType.RAW;
+import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType.NORMALISED ;
+import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType.FREQUENCIES ;
+import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType.ENTROPIES ;
+import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType ;
+import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramScale ;
 
 /**
  * @author mturyn
@@ -25,10 +43,27 @@ import java.util.Arrays;
 public class RGBPixelHist {
 
 	// Partition the RGB [0,255]^3 colourpace
-	private int[] minVals = {0,0,0} ;
-	private int[] maxVals = {255,255,255} ;	
-	private int[] nBins = {4,4,4} ;
-	private int[] meshes= {64,64,64} ; 
+	// evenly...for now:
+	private static int[] NBINS_COARSE = {2,2,2} ;
+	private static int[] NBINS_FINE = {4,4,4} ;
+	private static HashMap<HistogramScale,int[]> SCALE_DETAILS_NBINS = new HashMap<HistogramScale,int[]>() ;
+	static {
+		SCALE_DETAILS_NBINS.put(COARSE, NBINS_COARSE ) ;
+		SCALE_DETAILS_NBINS.put(FINE, NBINS_FINE ) ;
+	}
+
+	// ...but leave room for uneven partition later,
+	// most likely in (say) YUV or HSV space:
+	private static int[] MESHES_COARSE = {128,128,128} ;
+	private static int[] MESHES_FINE = {64,64,64} ;
+	private static HashMap<HistogramScale,int[]> SCALE_DETAILS_MESHES = new HashMap<HistogramScale,int[]>() ;
+	static {
+		SCALE_DETAILS_MESHES.put(COARSE, MESHES_COARSE ) ;
+		SCALE_DETAILS_MESHES.put(FINE, MESHES_FINE ) ;
+	}
+
+	int[] meshes ;
+	int[] nBins ;
 		
 	double[][][] data ;
 	
@@ -121,20 +156,32 @@ public class RGBPixelHist {
 		return this.dotProduct(pOtherHist)/(this.length()*pOtherHist.length() ) ;
 	}
 	
-	static double RAD_TO_DEGREES = 180d / Math.PI ;
 	
 	public double angle(RGBPixelHist pOtherHist){
 		return Math.acos(this.cosine(pOtherHist) ) ;
 	}	
 	
 	public int angleDegrees(RGBPixelHist pOtherHist){
-		return (int) Math.round(RAD_TO_DEGREES*this.angle(pOtherHist)) ;
+		return (int) Math.round(RAD_TO_INTEGRAL_DEGREES(this.angle(pOtherHist))) ;
+	}
+	
+/**
+ * Factory method that returns a histogram of the desired granularity:
+ * Will probably need more flexibility here, later, but for now we 
+ * will stick to the scale-conditional creation implicit in the maps from scale
+ * (e.g. COARSE)) to a mesh-set and a number of bins:
+ * @param pScale One of the scale types enumerated in HistogramScale
+ * @see com.pki.test.imageHistComparer.histogram.Utilities.HistogramScale
+ */
+	public static RGBPixelHist createHist(HistogramScale pScale){
+		RGBPixelHist result = new RGBPixelHist(SCALE_DETAILS_NBINS.get(pScale),SCALE_DETAILS_MESHES.get(pScale)) ;
+		return result ;
 	}
 	
 	
-	public RGBPixelHist(int[] pNBins, int[] pMeshes){
+	private RGBPixelHist(int[] pNBins, int[] pMeshes){
 		nBins = Arrays.copyOf(pNBins,pNBins.length) ;
-		meshes = Arrays.copyOf(pMeshes,meshes.length) ;		
+		meshes = Arrays.copyOf(pMeshes,pMeshes.length) ;		
 		
 		// These would need be initialised if I decide I need to start each bin with
 		// a count of (say) 1 in order to avoid divides-by-zero without testing for them,		
@@ -156,6 +203,7 @@ public class RGBPixelHist {
 		return result ;
 	}	
 	
+	/* Used in testing
 	public RGBPixelHist(BufferedImage pImage, int[] pBins, int[] pMeshes){
 		this( pBins, pMeshes ) ;
 		int height = pImage.getHeight();
@@ -176,24 +224,46 @@ public class RGBPixelHist {
 			}
 		}		
 	}
+	*/
+	
 
-		
+	/**
+	 * Turn this into a unit vector, put on stack for someone else to use.
+	 * (I lost too much time working with parent-child schemesfor different
+	 * histograms, and decided to have another object hold and keep track of them
+	 * instead.)
+	 * @return
+	 */
 	public RGBPixelHist normalised(){		
-
-		RGBPixelHist result = this.scaledCopy(this.length());
-		
-		// Test		
-		double acc = 0d ;
-		for(int r=0; r<nBins[0]; ++r){
-			for(int g=0; g<nBins[1]; ++g){
-				for(int b=0; b<nBins[2]; ++b){
-					acc += (result.getValue(r,g,b)*result.getValue(r,g,b)); 	
-				}
-			}
-		}
-		System.err.println("Length is "+ Math.sqrt(acc)) ;	
-		return result ;
+		return this.scaledCopy(this.length());	
 	}
+	
+	public RGBPixelHist frequencies(){		
+		return this.scaledCopy(this.nTotalCount);	
+	}	
+	
+	
+	public RGBPixelHist entropies(){
+		RGBPixelHist result = new RGBPixelHist(nBins,meshes) ;
+
+		// to avoid ln(0) problems, add 1 to every bin, adjust
+		// totalCount accordingly
+		int nAllBins = nBins[0]*nBins[1]*nBins[2] ;
+		double fudgedTotalCount = this.nTotalCount + nAllBins ;
+		
+		for(int binR=0;binR<nBins[0];++binR){
+			for(int binG=0;binG<nBins[1];++binG){
+				for(int binB=0;binB<nBins[2];++binB){
+					double val = this.getValue(binR,binG,binB) ;
+					val = (1+val)/fudgedTotalCount ;
+					val = 0 - val*LN2(val) ;
+					result.setValue(val,binR,binG,binB) ;
+				}
+			}	
+		}		
+		
+		return result ;
+	}		
 	
 	// Unit test start:
 	public static void main(String[] argv){
@@ -240,62 +310,39 @@ public class RGBPixelHist {
 				
 	}
 	
-	
-	
+		
 	public String getString(double pThreshold){
 		StringBuilder sb = new StringBuilder() ;
-		sb.append("Mesh sizes:   ").append('(');
-		for(int i=0;i<meshes.length;++i){
-			sb.append(meshes[i]);
-			if(i<meshes.length-1){
-				sb.append(',') ;
-			}
-		}
-		sb.append(")\r") ;
+		sb.append(super.toString()).append('\r') ;
 		for(int r=0; r<nBins[0]; ++r){
 			for(int g=0; g<nBins[1]; ++g){
 				for(int b=0; b<nBins[2]; ++b){
-					double val = getValue(r,g,b) ;
-					if( val >= pThreshold ){
-						String sVal = padded(val,10).substring(0,10) ;
-						sb.append(padded(r,3)).append(',') ;
-						sb.append(padded(g,3)).append(',') ;
-						sb.append(padded(b,3)).append(" :") ;
+					double val = this.getValue(r,g,b) ;
+					if(val >= pThreshold ){
+						sb.append(r).append(',').append(g).append(',').append(b).append(": ");
 						sb.append(val).append('\r') ;
 					}
 				}
 			}
-		}				
-		return sb.toString();
-	}
-	
-	
-	static String padded(Number n,int places){
-		// TODO: Put this into a UTilities class if keep:
-		String s = String.valueOf(n) ;
-		while(s.length()<places){
-			s = " "+ s ;
 		}
-		return s ;
-	}
-
-	public String getRawString(int pScaleIndex){
+		sb.append('\r') ;
+		return sb.toString();
+	}		
+	
+	public String toString(){
 		StringBuilder sb = new StringBuilder() ;
+		sb.append(super.toString()).append('\r') ;
 		for(int r=0; r<nBins[0]; ++r){
 			for(int g=0; g<nBins[1]; ++g){
 				for(int b=0; b<nBins[2]; ++b){
 					sb.append(r).append(',').append(g).append(',').append(b).append(": ");
-					// Do the lookup here, as opposed to putting it into a variable (more debugging-friendly),
-					// so that we don't have to care about the type of the value (int,double,...)
-					sb.append(data[r][g][b]).append('\n') ;
+					sb.append(this.getValue(r,g,b) ).append('\r') ;
 				}
 			}
 		}
-		
-		
+		sb.append('\r') ;
 		return sb.toString();
-	}	
-	
+	}			
 	
 }
 

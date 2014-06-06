@@ -1,13 +1,20 @@
 package com.pki.test.imageHistComparer.histogram;
 
-import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
-import java.util.HashMap;
+import java.awt.image.BufferedImage ;
+import java.awt.image.Raster ;
+import java.util.HashMap ;
 
 // I want to use an enum, since an integer is too specific and not descriptive enough,
 // but I don't want to index by arbitrary String instances:
-import static com.pki.test.imageHistComparer.histogram.HistogramScale.COARSE ;
-import static com.pki.test.imageHistComparer.histogram.HistogramScale.FINE ;
+import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramScale.COARSE ;
+import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramScale.FINE ;
+import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType.RAW;
+import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType.NORMALISED ;
+import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType.FREQUENCIES ;
+import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType.ENTROPIES ;
+import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType ;
+import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramScale ;
+import static com.pki.test.imageHistComparer.histogram.Utilities.RAD_TO_INTEGRAL_DEGREES;
 
 
 /**
@@ -22,7 +29,7 @@ import static com.pki.test.imageHistComparer.histogram.HistogramScale.FINE ;
  * that point we will need an ImageSignature interface so that different
  * types of signatures can be compared (though only to signatures of the
  * same type---I'm not talking about comparing a wavelet-based signature
- * instance to a stringified hist-based)
+ * instance to a stringified hist-based one...).
  * 
  * In this case, I'm storing a coarse histogram (2 bins/channel) and a finer
  * (4 bins/channel) and considering each bin as giving the length of a projection
@@ -35,17 +42,39 @@ import static com.pki.test.imageHistComparer.histogram.HistogramScale.FINE ;
  */
 public class ImageCharacteriser {
 
+	public static HistogramScale[] OUR_SCALES = {COARSE,FINE}  ;
+	public static HistogramType[] OUR_TYPES = {RAW,NORMALISED,FREQUENCIES,ENTROPIES}  ;
+	
+	// Index histogram views by pre-defined scales and data-types:
+	private HashMap<HistogramScale,HashMap<HistogramType,RGBPixelHist>> data ;
+	RGBPixelHist getHistAtScaleOfType(HistogramScale pScale,HistogramType pType){
+		RGBPixelHist hist = (data.get(pScale)).get(pType) ;
+		return hist ;
+	}
+	void setHistAtScaleOfType(RGBPixelHist pHist,HistogramScale pScale,HistogramType pType){
+		(data.get(pScale)).put(pType,pHist) ;
+	}	
+	
+	int nTotalCount = -1 ;
 	
 
-	
-	// Index histogram views by pre-defined scales:
-	private HashMap<HistogramScale,RGBPixelHist> dataRaw ;
-	private HashMap<HistogramScale,RGBPixelHist> dataNormalised ;
-
+/*
+ * How many raw histograms are we generating for each image? 
+ */
 	public int getDepth(){
-		return dataRaw.keySet().size() ;
+		return ((data.get(RAW)).keySet()).size() ;
 	}		
 	
+	public ImageCharacteriser(){
+		data = new HashMap<HistogramScale,HashMap<HistogramType,RGBPixelHist>>() ;
+		for( HistogramScale scale: OUR_SCALES){
+			HashMap<HistogramType,RGBPixelHist> byTypes = new HashMap<HistogramType,RGBPixelHist>() ;
+			data.put(scale, byTypes ) ;
+			for(HistogramType typ: OUR_TYPES){
+				(data.get(scale)).put( typ, RGBPixelHist.createHist(scale)) ; 
+			}
+		}	
+	}	
 
 	
 	/**
@@ -54,96 +83,104 @@ public class ImageCharacteriser {
 	 * @param pBlue[0,255] pixel blue value
 	 */
 	public void addPixel(int pRed,int pGreen,int pBlue){
-		/*
-		if( ++c<1 ){
-			for(int si=0;si<datas.length;++si){
-				System.err.println(meshes[si][0]+","+meshes[si][1]+","+ meshes[si][2]) ;
-			}		
+		for( HistogramScale scale: OUR_SCALES){
+			(this.getHistAtScaleOfType(scale,RAW)).addPixel(pRed,pGreen,pBlue) ;
 		}
-		*/
-		
-		// si for 'scaleIndex'; just trying to sow the seeds of more than two scales later: 
-		for(int si=0;si<datas.length;++si){
-			++(datas[si])[pRed/meshes[si][0]][pGreen/meshes[si][1]][pBlue/meshes[si][2]] ;
-		}
-		++nTotalCount ;
+	}
+	
+	public void normalise(){
+		for( HistogramScale scale: OUR_SCALES){
+			RGBPixelHist rawHist = (this.getHistAtScaleOfType(scale,RAW)) ;
+			this.setHistAtScaleOfType(rawHist.normalised(), scale, NORMALISED) ;
+		}		
 	}
 	
 	
-	public String getNormalisedString(int pScaleIndex, int pMax, int pThreshold){
-		StringBuilder sb = new StringBuilder() ;
-		int valPlaces = 1 + (int) Math.round(Math.log10(pMax)) ;
-		for(int r=0; r<nBinses[pScaleIndex][0]; ++r){
-			for(int g=0; g<nBinses[pScaleIndex][1]; ++g){
-				for(int b=0; b<nBinses[pScaleIndex][2]; ++b){
-					int val = (int)((double)pMax*getNormalisedValue(pScaleIndex,r,g,b)) ;
-					if( val >= pThreshold ){
-						sb.append(padded(r,3)).append(',') ;
-						sb.append(padded(g,3)).append(',') ;
-						sb.append(padded(b,3)).append(" :") ;
-						sb.append(padded(val,valPlaces)).append('\r') ;
-					}
-				}
-			}
-		}				
-		return sb.toString();
-	}
-	
-	public String getNormalisedString(int pScaleIndex,double pThreshold){
-		StringBuilder sb = new StringBuilder() ;
-		sb.append("Scale Index: ").append(pScaleIndex).append('\r') ;
-		sb.append("Mesh sizes:   ").append('(');
-		for(int i=0;i<meshes[pScaleIndex].length;++i){
-			sb.append(meshes[pScaleIndex][i]);
-			if(i<meshes[pScaleIndex].length-1){
-				sb.append(',') ;
-			}
-		}
-		sb.append(")\r") ;
-		for(int r=0; r<nBinses[pScaleIndex][0]; ++r){
-			for(int g=0; g<nBinses[pScaleIndex][1]; ++g){
-				for(int b=0; b<nBinses[pScaleIndex][2]; ++b){
-					double val = getNormalisedValue(pScaleIndex,r,g,b) ;
-					if( val >= pThreshold ){
-						String sVal = padded(val,10).substring(0,10) ;
-						sb.append(padded(r,3)).append(',') ;
-						sb.append(padded(g,3)).append(',') ;
-						sb.append(padded(b,3)).append(" :") ;
-						sb.append(val).append('\r') ;
-					}
-				}
-			}
-		}				
-		return sb.toString();
-	}
-	
-	
-	static String padded(Number n,int places){
-		// TODO: Put this into a UTilities class if keep:
-		String s = String.valueOf(n) ;
-		while(s.length()<places){
-			s = " "+ s ;
-		}
-		return s ;
-	}
-
-	public String getRawString(int pScaleIndex){
-		StringBuilder sb = new StringBuilder() ;
-		for(int r=0; r<nBinses[pScaleIndex][0]; ++r){
-			for(int g=0; g<nBinses[pScaleIndex][1]; ++g){
-				for(int b=0; b<nBinses[pScaleIndex][2]; ++b){
-					sb.append(r).append(',').append(g).append(',').append(b).append(": ");
-					// Do the lookup here, as opposed to putting it into a variable (more debugging-friendly),
-					// so that we don't have to care about the type of the value (int,double,...)
-					sb.append(datas[pScaleIndex][r][g][b]).append('\n') ;
-				}
-			}
-		}
-		
-		
-		return sb.toString();
+	public void frequencies(){
+		for( HistogramScale scale: OUR_SCALES){
+			RGBPixelHist rawHist = (this.getHistAtScaleOfType(scale,RAW)) ;
+			this.setHistAtScaleOfType(rawHist.frequencies(), scale, FREQUENCIES) ;
+		}		
 	}	
 	
+	public void entropies(){
+		for( HistogramScale scale: OUR_SCALES){
+			RGBPixelHist rawHist = (this.getHistAtScaleOfType(scale,RAW)) ;
+			this.setHistAtScaleOfType(rawHist.entropies(), scale, ENTROPIES) ;
+		}		
+	}		
+
+	/*
+	 * TODO: Replace this with a factory method once we have different sorts of characterisers.....
+	 */
+	public ImageCharacteriser(BufferedImage pImage){
+		this() ;
+		int height = pImage.getHeight();
+		int width = pImage.getWidth();
+
+		int r;
+		int g;
+		int b;
+
+		Raster raster = pImage.getRaster();
+		for (int i = 0; i < width; i++) {
+			for (int j = 0; j < height; j++) {
+				r = raster.getSample(i, j, 0);
+				g = raster.getSample(i, j, 1);
+				b = raster.getSample(i, j, 2);
+				this.addPixel(r, g, b);
+
+			}
+		}
+		this.normalise();
+		this.frequencies();
+		this.entropies() ;
+	}	
+
+	
+
+	public String getStringAtScaleOfType(HistogramScale pScale,HistogramType pType){
+		return (this.getHistAtScaleOfType(pScale, pType)).toString() ;
+	}		
+	
+	public String getRawString(HistogramScale pScale){
+		return this.getStringAtScaleOfType(pScale,RAW) ;
+	}	
+	
+	public String getNormalisedString(HistogramScale pScale){
+		return this.getStringAtScaleOfType(pScale,NORMALISED) ;
+	}		
+	
+	public String getFrequenciesString(HistogramScale pScale){
+		return this.getStringAtScaleOfType(pScale,FREQUENCIES) ;
+	}		
+	
+	public String getEntropiesString(HistogramScale pScale){
+		return this.getStringAtScaleOfType(pScale,NORMALISED) ;
+	}		
+		
+	public double dotProductAtScaleOfType(ImageCharacteriser pOther,HistogramScale pScale,HistogramType pType){
+		return this.getHistAtScaleOfType(pScale, pType).dotProduct(pOther.getHistAtScaleOfType(pScale, pType)) ;
+	}
+	
+	public double distanceAtScaleOfType(ImageCharacteriser pOther,HistogramScale pScale,HistogramType pType){
+		return this.getHistAtScaleOfType(pScale, pType).distance(pOther.getHistAtScaleOfType(pScale, pType)) ;
+	}	
+	
+	public double lengthAtScaleOfType(HistogramScale pScale,HistogramType pType){
+		return this.getHistAtScaleOfType(pScale, pType).length();
+	}
+
+	public double cosineAtScaleOfType(ImageCharacteriser pOther,HistogramScale pScale,HistogramType pType){
+		return this.getHistAtScaleOfType(pScale, pType).cosine(pOther.getHistAtScaleOfType(pScale, pType)) ;
+	}
+	public double angleAtScaleOfType(ImageCharacteriser pOther,HistogramScale pScale,HistogramType pType){
+		return this.getHistAtScaleOfType(pScale, pType).angle(pOther.getHistAtScaleOfType(pScale, pType)) ;
+	}	
+	
+	public int angleDegreesAtScaleOfType(ImageCharacteriser pOther,HistogramScale pScale,HistogramType pType){
+		return (int) Math.round(RAD_TO_INTEGRAL_DEGREES(this.angleAtScaleOfType(pOther,pScale,pType))) ;
+	}		
 	
 }
 
