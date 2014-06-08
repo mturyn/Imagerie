@@ -1,26 +1,23 @@
 package com.pki.test.imageHistComparer.histogram;
 
-import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
+import static com.pki.test.imageHistComparer.Utilities.LN2;
+import static com.pki.test.imageHistComparer.Utilities.RAD_TO_INTEGRAL_DEGREES;
+import static com.pki.test.imageHistComparer.Utilities.HistogramScale.COARSE;
+import static com.pki.test.imageHistComparer.Utilities.HistogramScale.FINE;
+
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.TreeSet;
 
-import static com.pki.test.imageHistComparer.histogram.Utilities.RAD_TO_INTEGRAL_DEGREES ;
-//What entropy means to me:
-import static com.pki.test.imageHistComparer.histogram.Utilities.LN2 ;
+import com.pki.test.imageHistComparer.Utilities;
+import com.pki.test.imageHistComparer.Utilities.HistogramScale;
 
-import static com.pki.test.imageHistComparer.histogram.Utilities.PADDED ;
+import com.pki.test.imageHistComparer.IndexedValue;
+
+
 
 //I want to use an enum, since an integer is too specific and not descriptive enough,
 //but I don't want to index by arbitrary String instances:
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramScale.COARSE ;
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramScale.FINE ;
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType.RAW;
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType.NORMALISED ;
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType.FREQUENCIES ;
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType.ENTROPIES ;
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType ;
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramScale ;
 
 /**
  * @author mturyn
@@ -66,6 +63,10 @@ public class RGBPixelHist {
 	int[] nBins ;
 		
 	double[][][] data ;
+	
+	// Order histogram by frequency, once we have it: 
+	TreeSet<RGBPixelsBin> descendingOrderedBins ;
+	
 	
 	int nTotalCount = 0 ;
 	static int c = -1 ;
@@ -171,7 +172,7 @@ public class RGBPixelHist {
  * will stick to the scale-conditional creation implicit in the maps from scale
  * (e.g. COARSE)) to a mesh-set and a number of bins:
  * @param pScale One of the scale types enumerated in HistogramScale
- * @see com.pki.test.imageHistComparer.histogram.Utilities.HistogramScale
+ * @see Utilities.HistogramScale
  */
 	public static RGBPixelHist createHist(HistogramScale pScale){
 		RGBPixelHist result = new RGBPixelHist(SCALE_DETAILS_NBINS.get(pScale),SCALE_DETAILS_MESHES.get(pScale)) ;
@@ -265,6 +266,22 @@ public class RGBPixelHist {
 		return result ;
 	}		
 	
+	public TreeSet<RGBPixelsBin> orderedBinsDescending(){
+		
+		descendingOrderedBins = new TreeSet<RGBPixelsBin>() ;
+
+		// 
+		for(int binR=0;binR<nBins[0];++binR){
+			for(int binG=0;binG<nBins[1];++binG){
+				for(int binB=0;binB<nBins[2];++binB){
+					descendingOrderedBins.add(new RGBPixelsBin(binR,binG,binB,getValue(binR,binG,binB)) ) ;
+				}
+			}	
+		}
+		return descendingOrderedBins ;
+	}			
+	
+	
 	// Unit test start:
 	public static void main(String[] argv){
 		int[] bins = {2,2,2} ;
@@ -343,6 +360,22 @@ public class RGBPixelHist {
 		sb.append('\r') ;
 		return sb.toString();
 	}			
+	
+	// Order the histogram entries by decreasing frequency,
+	// generate a string representing them up to min(given length,total number of bins)
+	public String toCharacterString(){
+		StringBuilder sb = new StringBuilder() ;
+		for(int r=0; r<nBins[0]; ++r){
+			for(int g=0; g<nBins[1]; ++g){
+				for(int b=0; b<nBins[2]; ++b){
+					sb.append(r).append(',').append(g).append(',').append(b).append(": ");
+					sb.append(this.getValue(r,g,b) ).append('\r') ;
+				}
+			}
+		}
+		sb.append('\r') ;
+		return sb.toString();
+	}
 	
 }
 

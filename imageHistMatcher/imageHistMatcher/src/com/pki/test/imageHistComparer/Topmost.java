@@ -1,41 +1,45 @@
 package com.pki.test.imageHistComparer;
 
+import static com.pki.test.imageHistComparer.Utilities.HistogramScale.COARSE;
+import static com.pki.test.imageHistComparer.Utilities.HistogramScale.FINE;
+import static com.pki.test.imageHistComparer.Utilities.HistogramType.ENTROPIES;
+import static com.pki.test.imageHistComparer.Utilities.HistogramType.FREQUENCIES;
+import static com.pki.test.imageHistComparer.Utilities.HistogramType.NORMALISED;
+import static com.pki.test.imageHistComparer.Utilities.HistogramType.RAW;
+
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
 import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
-import javax.swing.JFrame;
+
+import com.pki.test.imageHistComparer.Utilities.HistogramScale;
+import com.pki.test.imageHistComparer.Utilities.HistogramType;
+import com.pki.test.imageHistComparer.histogram.ImageCharacteriser;
 
 
-//I want to use an enum, since an integer is too specific and not descriptive enough,
-//but I don't want to index by arbitrary String instances:
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramScale.COARSE ;
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramScale.FINE ;
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType.RAW;
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType.NORMALISED ;
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType.FREQUENCIES ;
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType.ENTROPIES ;
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType ;
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramScale ;
-
-
-import com.pki.test.imageHistComparer.histogram.ImageCharacteriser ;
-
-import static com.pki.test.imageHistComparer.histogram.ImageCharacteriser.OUR_SCALES ;
-import static com.pki.test.imageHistComparer.histogram.ImageCharacteriser.OUR_TYPES ;
-
-public class Topmost extends Component { 
-	/**
-	 * 
-	 */
+public class Topmost extends Component {
 	private static final long serialVersionUID = "com.pki.test.imageHistComparer".hashCode();
+	
+
+	
+	public Topmost(String pFileSpec) {
+
+		try {
+			img = ImageIO.read(new File(pFileSpec));
+		} catch (IOException ioe) {
+			System.err.println("Error i/o: " + ioe);
+		}
+		characteriser = new ImageCharacteriser(img);
+		fileName = pFileSpec;
+		System.err.println(fileName);
+	}	
+
 	BufferedImage img;
+
+	String fileName;
 
 	public Dimension getPreferredSize() {
 		if (img == null) {
@@ -46,33 +50,29 @@ public class Topmost extends Component {
 			return new Dimension(img.getWidth(null), img.getHeight(null));
 		}
 	}
-
-	ImageCharacteriser characteriser;
-
-	public Topmost() {
-		try {
-			img = ImageIO.read(new File("c:/lychees-and-lasers_0.jpg"));
-		} catch (IOException ioe) {
-			System.err.println("Error i/o: " + ioe);
-		}
-
-		characteriser = new ImageCharacteriser(this.img);
-
-	}
 	
-	public Topmost(String pFileSpec) {
-		try {
-			img = ImageIO.read(new File(pFileSpec));
-		} catch (IOException ioe) {
-			System.err.println("Error i/o: " + ioe);
+	public static HistogramScale[] OUR_SCALES = {COARSE,FINE}  ;
+	public static HistogramType[] OUR_TYPES = {RAW,NORMALISED,FREQUENCIES,ENTROPIES}  ;	
+
+	ImageCharacteriser characteriser ;
+	
+	public IndexedValue[] findIndicesOfMostAndLeastSimilarAtScale(
+			Topmost[] pTopmosts,
+			HistogramScale pScale,
+			HistogramType pType
+			){
+		ImageCharacteriser[] characterisers = new ImageCharacteriser[pTopmosts.length];
+		for(int i=0;i<characterisers.length;++i){
+			characterisers[i] = pTopmosts[i].characteriser ;
 		}
-		characteriser = new ImageCharacteriser(img) ;
+		return this.characteriser.findIndicesOfMostAndLeastSimilarAtScale(characterisers,pScale,pType) ;
 	}	
 
+	
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] argv) {
 		// TODO Auto-generated method stub
 
 		/*
@@ -84,122 +84,276 @@ public class Topmost extends Component {
 		 */
 
 		/*
-		System.out.println(hist.getNormalisedString(0,100,1)) ;
-		System.out.println("");
-		System.out.println(hist.getNormalisedString(1,100,1)) ;	
-		*/
-		
-		Topmost instance_0 = new Topmost("c:/lychees-and-lasers_0.jpg");
-		Topmost instance_1 = new Topmost("c:/lychees-and-lasers_1.jpg");
-		Topmost instance_2 = new Topmost("c:/lychees-and-lasers_1-inverted.jpg");			
-		
-		
-		// In a real system this would turn into part of a unit-test:
-		System.out.println("Self-distance:\r") ;
-		for(HistogramScale scale:OUR_SCALES){
-			System.out.println("\tScale: "+scale) ;
-			//for(HistogramType typ: OUR_TYPES){
-				HistogramType typ = NORMALISED ;
-				System.out.println("\tType: "+typ) ;
-				System.out.println("\t\timage 0: "+ instance_0.characteriser.distanceAtScaleOfType(instance_0.characteriser,scale,typ)) ;
-				System.out.println("\t\timage 1: "+ instance_1.characteriser.distanceAtScaleOfType(instance_1.characteriser,scale,typ)) ;
-				System.out.println("\t\timage 2: "+ instance_2.characteriser.distanceAtScaleOfType(instance_2.characteriser,scale,typ)+'\r') ;
-//}
-		}			
-		
-		System.out.println("Length:\r") ;		
-		for(HistogramScale scale:OUR_SCALES){
-			System.out.println("\tScale: "+scale) ;
-			//for(HistogramType typ: OUR_TYPES){
-				HistogramType typ = NORMALISED ;
-				System.out.println("\tType: "+typ) ;
-				System.out.println("\t\timage 0: "+ instance_0.characteriser.lengthAtScaleOfType(scale,typ)) ;
-				System.out.println("\t\timage 1: "+ instance_1.characteriser.lengthAtScaleOfType(scale,typ)) ;
-				System.out.println("\t\timage 2: "+ instance_2.characteriser.lengthAtScaleOfType(scale,typ)+'\r') ;
-			//}
-		}				
+		 * System.out.println(hist.getNormalisedString(0,100,1)) ;
+		 * System.out.println("");
+		 * System.out.println(hist.getNormalisedString(1,100,1)) ;
+		 */
+		int nImages = Math.min(6, argv.length);
+		Topmost[] instances = new Topmost[nImages];
+		String[] labels = new String[nImages];
+
+		for (int j = 0; j < nImages; ++j) {
+			instances[j] = new Topmost(argv[j]);
+			labels[j] = argv[j].substring(1 + argv[j].lastIndexOf('/'));
+			System.out.println("Image " + j + "<--" + argv[j]);
+		}
+		System.out.println('\r');
+
+		double minValue = Double.MAX_VALUE;
+		double maxValue = Double.MIN_VALUE;
+		String minLabel = "Bad initial String instance.";
+		String maxLabel = "Bad initial String instance.";
 
 		// In a real system this would turn into part of a unit-test:
-		System.out.println("Distances:\r") ;
-		for(HistogramScale scale:OUR_SCALES){
-			System.out.println("\tScale: "+scale) ;
-			//for(HistogramType typ: OUR_TYPES){
-				HistogramType typ = NORMALISED ;
-				System.out.println("\tType: "+typ) ;
-				System.out.println("\t\tdistance 0-1: "+ instance_0.characteriser.distanceAtScaleOfType(instance_1.characteriser,scale,typ)) ;
-				System.out.println("\t\tdistance 1-0: "+ instance_1.characteriser.distanceAtScaleOfType(instance_0.characteriser,scale,typ)) ;
-				System.out.println("\t\tdistance 2-0: "+ instance_2.characteriser.distanceAtScaleOfType(instance_0.characteriser,scale,typ)) ;
-				System.out.println("\t\tdistance 2-1: "+ instance_2.characteriser.distanceAtScaleOfType(instance_1.characteriser,scale,typ)+'\r') ;
-			//}
-		}			
-		
-		// In a real system this would turn into part of a unit-test:
-		System.out.println("Cosines:\r") ;
-		for(HistogramScale scale:OUR_SCALES){
-			System.out.println("\tScale: "+scale) ;
-			//for(HistogramType typ: OUR_TYPES){
-				HistogramType typ = NORMALISED ;
-				System.out.println("\tType: "+typ) ;
-				System.out.println("\t\tcosine 0-1: "+ instance_0.characteriser.cosineAtScaleOfType(instance_1.characteriser,scale,typ)) ;
-				System.out.println("\t\tcosine 1-0: "+ instance_1.characteriser.cosineAtScaleOfType(instance_0.characteriser,scale,typ)) ;
-				System.out.println("\t\tcosine 2-0: "+ instance_2.characteriser.cosineAtScaleOfType(instance_0.characteriser,scale,typ)) ;
-				System.out.println("\t\tcosine 2-1: "+ instance_2.characteriser.cosineAtScaleOfType(instance_1.characteriser,scale,typ)+'\r') ;
-						//}
-		}		
+		System.out.println("\rSelf-distance:");
+		for (com.pki.test.imageHistComparer.Utilities.HistogramScale scale : OUR_SCALES) {
+			System.out.println("\tScale: " + scale);
+			// for(HistogramType typ: OUR_TYPES){
+			HistogramType typ = NORMALISED;
+			System.out.println("\tType: " + typ);
+			for (int j = 0; j < nImages; ++j) {
+				System.out.println("\t\tSelf-distance: image "
+						+ j
+						+ ": "
+						+ instances[j].characteriser.distanceAtScaleOfType(
+								instances[j].characteriser, scale, typ));
+			}
+		}
+		System.out.println('\r');
 
-		// In a real system this would turn into part of a unit-test:
-		System.out.println("Angles:\r") ;
-		for(HistogramScale scale:OUR_SCALES){
-			System.out.println("\tScale: "+scale) ;
-			//for(HistogramType typ: OUR_TYPES){
-				HistogramType typ = NORMALISED ;
-				System.out.println("\tType: "+typ) ;
-				System.out.println("\t\tangle 0-1: "+ instance_0.characteriser.angleDegreesAtScaleOfType(instance_1.characteriser,scale,typ)) ;
-				System.out.println("\t\tangle 0-0: "+ instance_0.characteriser.angleDegreesAtScaleOfType(instance_0.characteriser,scale,typ)) ;
-				System.out.println("\t\tangle 1-1: "+ instance_1.characteriser.angleDegreesAtScaleOfType(instance_1.characteriser,scale,typ)) ;
-				System.out.println("\t\tangle 1-0: "+ instance_1.characteriser.angleDegreesAtScaleOfType(instance_0.characteriser,scale,typ)) ;
-				System.out.println("\t\tangle 2-0: "+ instance_2.characteriser.angleDegreesAtScaleOfType(instance_0.characteriser,scale,typ)) ;
-				System.out.println("\t\tangle 2-1: "+ instance_2.characteriser.angleDegreesAtScaleOfType(instance_1.characteriser,scale,typ)+'\r') ;
-				
-			//}
-		}			
+		System.out.println("Length:");
+		for (HistogramScale scale : OUR_SCALES) {
+			System.out.println("\tScale: " + scale);
+			// for(HistogramType typ: OUR_TYPES){
+			HistogramType typ = NORMALISED;
+			System.out.println("\tType: " + typ);
+			for (int j = 0; j < nImages; ++j) {
+				System.out.println("\t\tLength: image "
+						+ j
+						+ ": "
+						+ instances[j].characteriser.lengthAtScaleOfType(scale,
+								typ));
+			}
+			// }
+		}
+		System.out.println('\r');
+
+		// In a real system this might be part of a learning loop to
+		// see which distances or combinations of them best characterise
+		// 'nearest' and 'furthest' images:
+		System.out.println("Distances:");
+		for (HistogramScale scale : OUR_SCALES) {
+			System.out.println("\tScale: " + scale);
+			for (HistogramType typ : OUR_TYPES) {
+				// HistogramType typ = NORMALISED ;
+				minValue = Double.MAX_VALUE;
+				maxValue = Double.MIN_VALUE;
+				System.out.println("\tType: " + typ);
+				for (int j = 0; j < nImages; ++j) {
+					for (int k = 0; k < nImages; ++k) {
+						double val = 
+								instances[j].characteriser.distanceAtScaleOfType(
+										instances[k].characteriser, 
+										scale, 
+										typ
+										);
+						System.out.println("\t\tDistance " + j + '-' 
+								+ k + ": "	+ val
+								);
+						if ((j != k) && (val < minValue)) {
+							minValue = val;
+							minLabel = "Distance: " +  scale + "  /  " +typ + ": "  
+									+ "Min:  " + labels[j] + " vs "
+									+ labels[k] +": "+val ;
+						}
+						if ((j != k) && (val > maxValue)) {
+							maxValue = val;
+							maxLabel = "Distance: " +  scale + "  /  " +typ + ": "
+									+ "Max:  " + labels[j] + " vs "
+									+ labels[k] +": "+val ;
+						}
+					}
+				}
+				System.out.println(minLabel + '\r' + maxLabel + '\r');
+			}
+		}
+
+		// In a real system this might be part of a learning loop to
+		// see which distances or combinations of them best characterise
+		// 'nearest' and 'furthest' images:
+		System.out.println("Cosines:");
+		for (HistogramScale scale : OUR_SCALES) {
+			System.out.println("\tScale: " + scale);
+			for (HistogramType typ : OUR_TYPES) {
+				// HistogramType typ = NORMALISED ;
+				minValue = Double.MAX_VALUE;
+				maxValue = Double.MIN_VALUE;
+				System.out.println("\tType: " + typ);
+				for (int j = 0; j < nImages; ++j) {
+					for (int k = 0; k < nImages; ++k) {
+						double val = instances[j].characteriser
+								.cosineAtScaleOfType(
+										instances[k].characteriser, scale, typ);
+						System.out.println("\t\tcosine " + j + "-" + k + ": "
+								+ val);
+						if ((j != k) && (val < minValue)) {
+							minValue = val;
+							minLabel = "Cosines: " +  scale + " / " +typ + ": " 
+									+ "Min:  " + labels[j] + " vs " + labels[k] +": "+val ;
+						}
+						if ((j != k) && (val > maxValue)) {
+							maxValue = val;
+							maxLabel = "Cosines: " +  scale + " / " +typ + ": " 
+									+ "Max:  " + labels[j] + " vs " + labels[k] +": "+val ;
+						}
+					}
+				}
+				System.err.println(minLabel + '\r' + maxLabel + '\r');
+			}
+			// }
+		}
+
+		// In a real system this might be part of a learning loop to
+		// see which distances or combinations of them best characterise
+		// 'nearest' and 'furthest' images:
+		System.out.println("Angles:");
+		for (HistogramScale scale : OUR_SCALES) {
+			System.out.println("\tScale: " + scale);
+			// for(HistogramType typ: OUR_TYPES){
+			HistogramType typ = NORMALISED;
+			minValue = Double.MAX_VALUE;
+			maxValue = Double.MIN_VALUE;
+			System.out.println("\tType: " + typ);
+			for (int j = 0; j < nImages; ++j) {
+				for (int k = 0; k < nImages; ++k) {
+					double val = instances[j].characteriser
+							.angleDegreesAtScaleOfType(
+									instances[k].characteriser, scale, typ);
+					System.out.println("\t\tangle " + j + '-' + k + ": " + val);
+					if ((j != k) && (val < minValue)) {
+						minValue = val;
+						minLabel = "Angle: " +  scale + " / " +typ + ": " 
+								+ "Min:  " + labels[j] + " vs " + labels[k] +": "+val ;
+					}
+					if ((j != k) && (val > maxValue)) {
+						maxValue = val;
+						maxLabel = "Angle: " +  scale + " / " +typ + ": " 
+								+ "Max:  " + labels[j] + " vs " + labels[k] +": "+val ;
+					}
+				}
+				System.err.println(minLabel + '\r' + maxLabel + '\r');
+			}
+			// }
+
+		}
+		System.out.println('\r');
+
+		System.out.println("Entropies:");
+		for(HistogramScale scale: OUR_SCALES){
+			for (int j = 0; j < nImages; ++j) {
+				System.out.println("\tEntropy: image " + j + ": scale: "+scale+":  "
+						+ instances[j].characteriser.getEntropiesString(scale));
+			}
+		}
+		System.out.println('\r');
+
+		// In a real system this might be part of a learning loop to
+		// see which distances or combinations of them best characterise
+		// 'nearest' and 'furthest' images:
+		System.out.println("Cosines:");
+		System.out.println(" (entropies)");
+		for (HistogramScale scale : OUR_SCALES) {
+			System.out.println("\tScale: " + scale);
+			// for(HistogramType typ: OUR_TYPES){
+			HistogramType typ = ENTROPIES;
+			minValue = Double.MAX_VALUE;
+			maxValue = Double.MIN_VALUE;
+			System.out.println("\tType: " + typ);
+			for (int j = 0; j < nImages; ++j) {
+				for (int k = 0; k < nImages; ++k) {
+					double val = instances[j].characteriser
+							.cosineAtScaleOfType(instances[k].characteriser,
+									scale, typ);
+					System.out
+					.println("\t\tcosine " + j + '-' + k + ": " + val);
+					if ((j != k) && (val < minValue)) {
+						minValue = val;
+						minLabel = "Cosine: " +  scale + " / " +typ + ": " 
+								+ "Min:  " + labels[j] + " vs " + labels[k] +": "+val ;
+					}
+					if ((j != k) && (val > maxValue)) {
+						maxValue = val;
+						maxLabel = "Cosine: " +  scale + " / " +typ + ": " 
+								+ "Max:  " + labels[j] + " vs " + labels[k] +": "+val ;
+					}
+				}
+				System.err.println(minLabel + '\r' + maxLabel + '\r');
+			}
+			// }
+		}
+		System.out.println('\r');
+
+		// In a real system this might be part of a learning loop to
+		// see which distances or combinations of them best characterise
+		// 'nearest' and 'furthest' images:
+		System.out.println("Angles:");
+		System.out.println(" (entropies)");
+		for (HistogramScale scale : OUR_SCALES) {
+			System.out.println("\tScale: " + scale);
+			// for(HistogramType typ: OUR_TYPES){
+			HistogramType typ = ENTROPIES;
+			minValue = Double.MAX_VALUE;
+			maxValue = Double.MIN_VALUE;
+			System.out.println("\tType: " + typ);
+			for (int j = 0; j < nImages; ++j) {
+				for (int k = 0; k < nImages; ++k) {
+					double val = instances[j].characteriser
+							.angleDegreesAtScaleOfType(
+									instances[k].characteriser, scale, typ);
+					System.out.println("\t\tangle " + j + '-' + k + ": " + val);
+					if ((j != k) && (val < minValue)) {
+						minValue = val;
+						minLabel = "Angle: " +  scale + " / " +typ + ": " 
+								+ "Min:  " + labels[j] + " vs " + labels[k] +": "+val ;
+					}
+					if ((j != k) && (val > maxValue)) {
+						maxValue = val;
+						maxLabel = "Angle: " +  scale + " / " +typ + ": " 
+								+ "Max:  " + labels[j] + " vs " + labels[k] +": "+val ;
+					}
+				}
+			}
+			// }
+			System.err.println(minLabel + '\r' + maxLabel + '\r');
+		}
+
+		System.err.println('\r') ;
+		// Testing method much like what we'll want soon:
+
+		for (int j = 0; j < nImages; ++j) {		
+			for(HistogramType typ: OUR_TYPES){	
+				for (HistogramScale scale : OUR_SCALES) {
 
 
-		System.out.println("Entropies:") ;
-		System.out.println("\timage 0\r\t"+instance_0.characteriser.getEntropiesString(COARSE)) ;
-		System.out.println("\timage 1\r\t"+instance_1.characteriser.getEntropiesString(COARSE)) ;
-		System.out.println("\timage 2\r\t"+instance_2.characteriser.getEntropiesString(COARSE)) ;		
-		
-		System.out.println("Cosines:") ;
-		System.out.println(" (entropies)") ; 		
-		for(HistogramScale scale:OUR_SCALES){
-			System.out.println("\tScale: "+scale) ;
-			//for(HistogramType typ: OUR_TYPES){
-				HistogramType typ = ENTROPIES ;
-				System.out.println("\tType: "+typ) ;
-				System.out.println("\t\tcosine 0-1: "+ instance_0.characteriser.cosineAtScaleOfType(instance_1.characteriser,scale,typ)) ;
-				System.out.println("\t\tcosine 1-0: "+ instance_1.characteriser.cosineAtScaleOfType(instance_0.characteriser,scale,typ)) ;
-				System.out.println("\t\tcosine 2-0: "+ instance_2.characteriser.cosineAtScaleOfType(instance_0.characteriser,scale,typ)) ;
-				System.out.println("\t\tcosine 2-1: "+ instance_2.characteriser.cosineAtScaleOfType(instance_1.characteriser,scale,typ)+'\r') ;
-						//}
-		}			
-		
-		
-		System.out.println("Angles:") ;
-		System.out.println(" (entropies)") ; 		
-		for(HistogramScale scale:OUR_SCALES){
-			System.out.println("\tScale: "+scale) ;
-			//for(HistogramType typ: OUR_TYPES){
-				HistogramType typ = ENTROPIES ;
-				System.out.println("\tType: "+typ) ;
-				System.out.println("\t\tangle 0-1: "+ instance_0.characteriser.angleDegreesAtScaleOfType(instance_1.characteriser,scale,typ)) ;
-				System.out.println("\t\tangle 1-0: "+ instance_1.characteriser.angleDegreesAtScaleOfType(instance_0.characteriser,scale,typ)) ;
-				System.out.println("\t\tangle 2-0: "+ instance_2.characteriser.angleDegreesAtScaleOfType(instance_0.characteriser,scale,typ)) ;
-				System.out.println("\t\tangle 2-1: "+ instance_2.characteriser.angleDegreesAtScaleOfType(instance_1.characteriser,scale,typ)+'\r') ;
-						//}
-		}					
-		
+					System.err.println(labels[j]+':') ;
+					IndexedValue[] analysis 
+						= instances[j].findIndicesOfMostAndLeastSimilarAtScale(instances,scale,typ) ;
+					System.err.println("\t"+scale+" / "+typ  ) ;
+					System.err.println("\t\tMin: " +labels[ analysis[0].nIndex]+": "+ analysis[0].dValue) ;	
+					System.err.println("\t\tMax: " +labels[ analysis[1].nIndex]+": "+ analysis[1].dValue) ;
+					System.err.println("") ;
+				}
+			}
+			System.err.println("") ;
+		}
 		
 	}
+
+
+
+
+
+
+
 
 }

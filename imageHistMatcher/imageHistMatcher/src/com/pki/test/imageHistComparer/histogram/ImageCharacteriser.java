@@ -1,21 +1,21 @@
 package com.pki.test.imageHistComparer.histogram;
 
-import java.awt.image.BufferedImage ;
-import java.awt.image.Raster ;
-import java.util.HashMap ;
+import static com.pki.test.imageHistComparer.Utilities.RAD_TO_INTEGRAL_DEGREES;
+import static com.pki.test.imageHistComparer.Utilities.HistogramScale.COARSE;
+import static com.pki.test.imageHistComparer.Utilities.HistogramScale.FINE;
+import static com.pki.test.imageHistComparer.Utilities.HistogramType.ENTROPIES;
+import static com.pki.test.imageHistComparer.Utilities.HistogramType.FREQUENCIES;
+import static com.pki.test.imageHistComparer.Utilities.HistogramType.NORMALISED;
+import static com.pki.test.imageHistComparer.Utilities.HistogramType.RAW;
 
-// I want to use an enum, since an integer is too specific and not descriptive enough,
-// but I don't want to index by arbitrary String instances:
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramScale.COARSE ;
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramScale.FINE ;
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType.RAW;
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType.NORMALISED ;
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType.FREQUENCIES ;
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType.ENTROPIES ;
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramType ;
-import static com.pki.test.imageHistComparer.histogram.Utilities.HistogramScale ;
-import static com.pki.test.imageHistComparer.histogram.Utilities.RAD_TO_INTEGRAL_DEGREES;
+import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
+import java.util.HashMap;
 
+import com.pki.test.imageHistComparer.Utilities.HistogramScale;
+import com.pki.test.imageHistComparer.Utilities.HistogramType;
+
+import com.pki.test.imageHistComparer.IndexedValue;
 
 /**
  * @author mturyn 
@@ -42,10 +42,13 @@ import static com.pki.test.imageHistComparer.histogram.Utilities.RAD_TO_INTEGRAL
  */
 public class ImageCharacteriser {
 
+	
+	// Index histogram views by pre-defined scales and data-types:
+	
 	public static HistogramScale[] OUR_SCALES = {COARSE,FINE}  ;
 	public static HistogramType[] OUR_TYPES = {RAW,NORMALISED,FREQUENCIES,ENTROPIES}  ;
 	
-	// Index histogram views by pre-defined scales and data-types:
+	
 	private HashMap<HistogramScale,HashMap<HistogramType,RGBPixelHist>> data ;
 	RGBPixelHist getHistAtScaleOfType(HistogramScale pScale,HistogramType pType){
 		RGBPixelHist hist = (data.get(pScale)).get(pType) ;
@@ -137,6 +140,42 @@ public class ImageCharacteriser {
 		this.entropies() ;
 	}	
 
+	
+	public IndexedValue[] findIndicesOfMostAndLeastSimilarAtScale(ImageCharacteriser[] pCharacterisers,HistogramScale pScale,HistogramType pType){
+
+		IndexedValue[] result = new IndexedValue[2] ;
+		// 0<- min, 1<-max 
+		//TODO: use a map and enum'd keys instead?
+		result[0] = new IndexedValue(-1,Double.MAX_VALUE) ;
+		result[1] = new IndexedValue(-1,Double.MIN_VALUE) ;
+		
+		for(int i=0;i<pCharacterisers.length;++i){
+			// Avoid treating self as another---note that this is not .equals(),
+			// which could (and probably should) be true for separate characterisers
+			// of the same class eating the same image....
+			if(this == pCharacterisers[i]){
+				continue ;
+			}
+			
+			// How to specify the method used when we're (for example) 
+			// training up the recogniser, e.g. find out that frequency distance works best at coarse
+			// level but entropic angle best at fine?
+			double val = this.angleAtScaleOfType(pCharacterisers[i], pScale, pType) ;
+			// Bias toward first-found results, so "<"/">", not "<="/">" or ">="/"<":
+			if( val < result[0].dValue){
+				result[0].dValue = val ;
+				result[0].nIndex = i ;
+			}
+			if( val > result[1].dValue){
+				result[1].dValue = val ;
+				result[1].nIndex = i ;
+			}		
+		}
+
+		return result ;		
+	}
+	
+	
 	
 
 	public String getStringAtScaleOfType(HistogramScale pScale,HistogramType pType){
