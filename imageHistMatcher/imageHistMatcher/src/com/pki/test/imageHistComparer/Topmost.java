@@ -30,11 +30,11 @@ public class Topmost extends Component {
 		try {
 			img = ImageIO.read(new File(pFileSpec));
 		} catch (IOException ioe) {
-			System.err.println("Error i/o: " + ioe);
+			System.out/*err*/.println("Error i/o: " + ioe);
 		}
 		characteriser = new ImageCharacteriser(img);
 		fileName = pFileSpec;
-		System.err.println(fileName);
+		System.out/*err*/.println(fileName);
 	}	
 
 	BufferedImage img;
@@ -45,7 +45,7 @@ public class Topmost extends Component {
 		if (img == null) {
 			return new Dimension(100, 100);
 		} else {
-			System.err.println("WxH:" + img.getWidth(null) + ','
+			System.out/*err*/.println("WxH:" + img.getWidth(null) + ','
 					+ img.getHeight(null));
 			return new Dimension(img.getWidth(null), img.getHeight(null));
 		}
@@ -208,7 +208,7 @@ public class Topmost extends Component {
 						}
 					}
 				}
-				System.err.println(minLabel + '\r' + maxLabel + '\r');
+				System.out/*err*/.println(minLabel + '\r' + maxLabel + '\r');
 			}
 			// }
 		}
@@ -241,7 +241,7 @@ public class Topmost extends Component {
 								+ "Max:  " + labels[j] + " vs " + labels[k] +": "+val ;
 					}
 				}
-				System.err.println(minLabel + '\r' + maxLabel + '\r');
+				System.out/*err*/.println(minLabel + '\r' + maxLabel + '\r');
 			}
 			// }
 
@@ -287,7 +287,7 @@ public class Topmost extends Component {
 								+ "Max:  " + labels[j] + " vs " + labels[k] +": "+val ;
 					}
 				}
-				System.err.println(minLabel + '\r' + maxLabel + '\r');
+				System.out/*err*/.println(minLabel + '\r' + maxLabel + '\r');
 			}
 			// }
 		}
@@ -324,27 +324,25 @@ public class Topmost extends Component {
 				}
 			}
 			// }
-			System.err.println(minLabel + '\r' + maxLabel + '\r');
+			System.out/*err*/.println(minLabel + '\r' + maxLabel + '\r');
 		}
 
-		System.err.println('\r') ;
+		System.out/*err*/.println('\r') ;
 		// Testing method much like what we'll want soon:
 
-		for (int j = 0; j < nImages; ++j) {		
+		for (int j = 0; j < nImages; ++j) {
+			System.out/*err*/.println(labels[j]+':') ;			
 			for(HistogramType typ: OUR_TYPES){	
 				for (HistogramScale scale : OUR_SCALES) {
-
-
-					System.err.println(labels[j]+':') ;
 					IndexedValue[] analysis 
 						= instances[j].findIndicesOfMostAndLeastSimilarAtScale(instances,scale,typ) ;
-					System.err.println("\t"+scale+" / "+typ  ) ;
-					System.err.println("\t\tMin: " +labels[ analysis[0].nIndex]+": "+ analysis[0].dValue) ;	
-					System.err.println("\t\tMax: " +labels[ analysis[1].nIndex]+": "+ analysis[1].dValue) ;
-					System.err.println("") ;
+					System.out/*err*/.println("\t"+scale+" / "+typ  ) ;
+					System.out/*err*/.println("\t\tMin: " +labels[ analysis[0].nIndex]+": "+ analysis[0].dValue) ;	
+					System.out/*err*/.println("\t\tMax: " +labels[ analysis[1].nIndex]+": "+ analysis[1].dValue) ;
+					System.out/*err*/.println("") ;
 				}
 			}
-			System.err.println("") ;
+			System.out/*err*/.println("") ;
 		}
 		
 	}
