@@ -37,7 +37,7 @@ import com.pki.test.imageHistComparer.IndexedValue;
  * I'd really like: a cluster analysis to determine a short signature for the image:
  * 
  */
-public class RGBPixelHist {
+public class RGBPixelHist implements IHistogram {
 
 	// Partition the RGB [0,255]^3 colourpace
 	// evenly...for now:
@@ -71,27 +71,38 @@ public class RGBPixelHist {
 	int nTotalCount = 0 ;
 	static int c = -1 ;
 	
-	/**
-	 * @param pRed [0,255] pixel red value
-	 * @param pGreen [0,255] pixel green value
-	 * @param pBlue[0,255] pixel blue value
+	/* (non-Javadoc)
+	 * @see com.pki.test.imageHistComparer.histogram.IHistogram#addPixel(int, int, int)
 	 */
+	@Override
 	public void addPixel(int pRed,int pGreen,int pBlue){
 		++data[pRed/meshes[0]][pGreen/meshes[1]][pBlue/meshes[2]] ;
 		++nTotalCount ;
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.pki.test.imageHistComparer.histogram.IHistogram#getValue(int, int, int)
+	 */
+	@Override
 	public double getValue(int pBinRed,int pBinGreen,int pBinBlue){
 		return data[pBinRed][pBinGreen][pBinBlue] ;
 	}
 	
-	public RGBPixelHist setValue(double pVal, int pBinRed,int pBinGreen,int pBinBlue){
+	/* (non-Javadoc)
+	 * @see com.pki.test.imageHistComparer.histogram.IHistogram#setValue(int, int, int, double)
+	 */
+	@Override
+	public IHistogram setValue(int pBinRed, int pBinGreen,int pBinBlue,double pVal){
 		data[pBinRed][pBinGreen][pBinBlue] = pVal ;
 		return this ;
 	}	
 	
 
-	public double distance(RGBPixelHist pOtherHist){	
+	/* (non-Javadoc)
+	 * @see com.pki.test.imageHistComparer.histogram.IHistogram#distance(com.pki.test.imageHistComparer.histogram.IHistogram)
+	 */
+	@Override
+	public double distance(IHistogram pOtherHist){	
 		double result = -1d ;
 		double accumulator = 0d ;
 		
@@ -110,12 +121,11 @@ public class RGBPixelHist {
 		return result ;
 	}
 	
-	/**
-	 *  We're storing in a matrix, but we're treating it as a vector
-	 * @param pOtherHist
-	 * @return
+	/* (non-Javadoc)
+	 * @see com.pki.test.imageHistComparer.histogram.IHistogram#dotProduct(com.pki.test.imageHistComparer.histogram.IHistogram)
 	 */
-	public double dotProduct(RGBPixelHist pOtherHist){	
+	@Override
+	public double dotProduct(IHistogram pOtherHist){	
 		double result = 0d ;
 		
 		// For this iteration, assume histograms are structurally identical
@@ -132,6 +142,10 @@ public class RGBPixelHist {
 	}	
 	
 	
+	/* (non-Javadoc)
+	 * @see com.pki.test.imageHistComparer.histogram.IHistogram#length()
+	 */
+	@Override
 	public double length(){	
 		double result = -1d ;
 		double accumulator = 0d ;
@@ -149,7 +163,11 @@ public class RGBPixelHist {
 		return result ;
 	}
 	
-	public double cosine(RGBPixelHist pOtherHist){
+	/* (non-Javadoc)
+	 * @see com.pki.test.imageHistComparer.histogram.IHistogram#cosine(com.pki.test.imageHistComparer.histogram.IHistogram)
+	 */
+	@Override
+	public double cosine(IHistogram pOtherHist){
 		double _d = this.distance(pOtherHist) ;
 		double _l = this.length() ;
 		double _lO = pOtherHist.length() ;
@@ -158,11 +176,19 @@ public class RGBPixelHist {
 	}
 	
 	
-	public double angle(RGBPixelHist pOtherHist){
+	/* (non-Javadoc)
+	 * @see com.pki.test.imageHistComparer.histogram.IHistogram#angle(com.pki.test.imageHistComparer.histogram.IHistogram)
+	 */
+	@Override
+	public double angle(IHistogram pOtherHist){
 		return Math.acos(this.cosine(pOtherHist) ) ;
 	}	
 	
-	public int angleDegrees(RGBPixelHist pOtherHist){
+	/* (non-Javadoc)
+	 * @see com.pki.test.imageHistComparer.histogram.IHistogram#angleDegrees(com.pki.test.imageHistComparer.histogram.IHistogram)
+	 */
+	@Override
+	public int angleDegrees(IHistogram pOtherHist){
 		return (int) Math.round(RAD_TO_INTEGRAL_DEGREES(this.angle(pOtherHist))) ;
 	}
 	
@@ -191,12 +217,16 @@ public class RGBPixelHist {
 		nTotalCount = 0 ;
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.pki.test.imageHistComparer.histogram.IHistogram#scaledCopy(double)
+	 */
+	@Override
 	public RGBPixelHist scaledCopy(double pScale){
 		RGBPixelHist result = new RGBPixelHist(nBins,meshes) ;
 		for(int binR=0;binR<nBins[0];++binR){
 			for(int binG=0;binG<nBins[1];++binG){
 				for(int binB=0;binB<nBins[2];++binB){
-					result.setValue(this.getValue(binR,binG,binB)/pScale,binR,binG,binB) ;
+					result.setValue(binR,binG,binB,this.getValue(binR,binG,binB)/pScale) ;
 				}
 			}	
 		}		
@@ -228,23 +258,28 @@ public class RGBPixelHist {
 	*/
 	
 
-	/**
-	 * Turn this into a unit vector, put on stack for someone else to use.
-	 * (I lost too much time working with parent-child schemesfor different
-	 * histograms, and decided to have another object hold and keep track of them
-	 * instead.)
-	 * @return
+	/* (non-Javadoc)
+	 * @see com.pki.test.imageHistComparer.histogram.IHistogram#getCopyNormalised()
 	 */
-	public RGBPixelHist normalised(){		
+	@Override
+	public RGBPixelHist getCopyNormalised(){		
 		return this.scaledCopy(this.length());	
 	}
 	
-	public RGBPixelHist frequencies(){		
+	/* (non-Javadoc)
+	 * @see com.pki.test.imageHistComparer.histogram.IHistogram#getCopyFrequencies()
+	 */
+	@Override
+	public RGBPixelHist getCopyFrequencies(){		
 		return this.scaledCopy(this.nTotalCount);	
 	}	
 	
 	
-	public RGBPixelHist entropies(){
+	/* (non-Javadoc)
+	 * @see com.pki.test.imageHistComparer.histogram.IHistogram#getCopyEntropies()
+	 */
+	@Override
+	public RGBPixelHist getCopyEntropies(){
 		RGBPixelHist result = new RGBPixelHist(nBins,meshes) ;
 
 		// to avoid ln(0) problems, add 1 to every bin, adjust
@@ -257,8 +292,8 @@ public class RGBPixelHist {
 				for(int binB=0;binB<nBins[2];++binB){
 					double val = this.getValue(binR,binG,binB) ;
 					val = (1+val)/fudgedTotalCount ;
-					val = 0 - val*LN2(val) ;
-					result.setValue(val,binR,binG,binB) ;
+					val = -1.0*val*LN2(val) ;
+					result.setValue(binR,binG,binB,val) ;
 				}
 			}	
 		}		
@@ -266,6 +301,10 @@ public class RGBPixelHist {
 		return result ;
 	}		
 	
+	/* (non-Javadoc)
+	 * @see com.pki.test.imageHistComparer.histogram.IHistogram#orderedBinsDescending()
+	 */
+	@Override
 	public TreeSet<RGBPixelsBin> orderedBinsDescending(){
 		
 		descendingOrderedBins = new TreeSet<RGBPixelsBin>() ;
@@ -286,7 +325,7 @@ public class RGBPixelHist {
 	public static void main(String[] argv){
 		int[] bins = {2,2,2} ;
 		int[] meshes = {128,128,128} ;
-		RGBPixelHist instance_0 = new RGBPixelHist(bins,meshes) ;
+		IHistogram instance_0 = new RGBPixelHist(bins,meshes) ;
 		for(int i=0;i<4;++i){
 			instance_0.addPixel(128, 0, 0) ;
 		}
@@ -294,12 +333,12 @@ public class RGBPixelHist {
 			instance_0.addPixel(0,0,128) ;
 		}		
 
-		RGBPixelHist norm_0 = instance_0.normalised();
+		IHistogram norm_0 = instance_0.getCopyNormalised();
 		
-		System.out.println("Raw: "+instance_0.length()+"\r"+instance_0.getString(0d)) ;
-		System.out.println("Normed: "+norm_0.length()+"\r"+norm_0.getString(0d)) ;
+		System.out.println("Raw: "+instance_0.length()+"\r"+instance_0.getStringThresholded(0d)) ;
+		System.out.println("Normed: "+norm_0.length()+"\r"+norm_0.getStringThresholded(0d)) ;
 		
-		RGBPixelHist instance_1 = new RGBPixelHist(bins,meshes) ;
+		IHistogram instance_1 = new RGBPixelHist(bins,meshes) ;
 		for(int i=0;i<3;++i){
 			instance_1.addPixel(128, 0, 0) ;
 		}
@@ -307,10 +346,10 @@ public class RGBPixelHist {
 			instance_1.addPixel(0,0,128) ;
 		}		
 
-		RGBPixelHist norm_1 = instance_1.normalised();
+		IHistogram norm_1 = instance_1.getCopyNormalised();
 		
-		System.out.println("Raw: "+instance_1.length()+"\r"+instance_1.getString(0d)) ;
-		System.out.println("Normed: "+norm_1.length()+"\r"+norm_1.getString(0d)) ;	
+		System.out.println("Raw: "+instance_1.length()+"\r"+instance_1.getStringThresholded(0d)) ;
+		System.out.println("Normed: "+norm_1.length()+"\r"+norm_1.getStringThresholded(0d)) ;	
 		
 		System.out.println("Distance: 0-1: "+norm_0.distance(norm_1)) ;
 		System.out.println("Distance: 1-0: "+norm_1.distance(norm_0)) ;
@@ -328,7 +367,11 @@ public class RGBPixelHist {
 	}
 	
 		
-	public String getString(double pThreshold){
+	/* (non-Javadoc)
+	 * @see com.pki.test.imageHistComparer.histogram.IHistogram#getStringThresholded(double)
+	 */
+	@Override
+	public String getStringThresholded(double pThreshold){
 		StringBuilder sb = new StringBuilder() ;
 		sb.append(super.toString()).append('\r') ;
 		for(int r=0; r<nBins[0]; ++r){
@@ -346,6 +389,10 @@ public class RGBPixelHist {
 		return sb.toString();
 	}		
 	
+	/* (non-Javadoc)
+	 * @see com.pki.test.imageHistComparer.histogram.IHistogram#toString()
+	 */
+	@Override
 	public String toString(){
 		StringBuilder sb = new StringBuilder() ;
 		sb.append(super.toString()).append('\r') ;
@@ -363,6 +410,10 @@ public class RGBPixelHist {
 	
 	// Order the histogram entries by decreasing frequency,
 	// generate a string representing them up to min(given length,total number of bins)
+	/* (non-Javadoc)
+	 * @see com.pki.test.imageHistComparer.histogram.IHistogram#toCharacterString()
+	 */
+	@Override
 	public String toCharacterString(){
 		StringBuilder sb = new StringBuilder() ;
 		for(int r=0; r<nBins[0]; ++r){

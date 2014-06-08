@@ -1,6 +1,7 @@
 package com.pki.test.imageHistComparer.histogram;
 
 import static com.pki.test.imageHistComparer.Utilities.RAD_TO_INTEGRAL_DEGREES;
+
 import static com.pki.test.imageHistComparer.Utilities.HistogramScale.COARSE;
 import static com.pki.test.imageHistComparer.Utilities.HistogramScale.FINE;
 import static com.pki.test.imageHistComparer.Utilities.HistogramType.ENTROPIES;
@@ -10,6 +11,7 @@ import static com.pki.test.imageHistComparer.Utilities.HistogramType.RAW;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import com.pki.test.imageHistComparer.Utilities.HistogramScale;
@@ -49,12 +51,13 @@ public class ImageCharacteriser {
 	public static HistogramType[] OUR_TYPES = {RAW,NORMALISED,FREQUENCIES,ENTROPIES}  ;
 	
 	
-	private HashMap<HistogramScale,HashMap<HistogramType,RGBPixelHist>> data ;
-	RGBPixelHist getHistAtScaleOfType(HistogramScale pScale,HistogramType pType){
-		RGBPixelHist hist = (data.get(pScale)).get(pType) ;
+	private HashMap<HistogramScale,HashMap<HistogramType,IHistogram>> data ;
+	
+	IHistogram getHistAtScaleOfType(HistogramScale pScale,HistogramType pType){
+		IHistogram hist = (data.get(pScale)).get(pType) ;
 		return hist ;
 	}
-	void setHistAtScaleOfType(RGBPixelHist pHist,HistogramScale pScale,HistogramType pType){
+	void setHistAtScaleOfType(IHistogram pHist,HistogramScale pScale,HistogramType pType){
 		(data.get(pScale)).put(pType,pHist) ;
 	}	
 	
@@ -69,9 +72,9 @@ public class ImageCharacteriser {
 	}		
 	
 	public ImageCharacteriser(){
-		data = new HashMap<HistogramScale,HashMap<HistogramType,RGBPixelHist>>() ;
+		data = new HashMap<HistogramScale,HashMap<HistogramType,IHistogram>>() ;
 		for( HistogramScale scale: OUR_SCALES){
-			HashMap<HistogramType,RGBPixelHist> byTypes = new HashMap<HistogramType,RGBPixelHist>() ;
+			HashMap<HistogramType,IHistogram> byTypes = new HashMap<HistogramType,IHistogram>() ;
 			data.put(scale, byTypes ) ;
 			for(HistogramType typ: OUR_TYPES){
 				(data.get(scale)).put( typ, RGBPixelHist.createHist(scale)) ; 
@@ -93,23 +96,23 @@ public class ImageCharacteriser {
 	
 	public void normalise(){
 		for( HistogramScale scale: OUR_SCALES){
-			RGBPixelHist rawHist = (this.getHistAtScaleOfType(scale,RAW)) ;
-			this.setHistAtScaleOfType(rawHist.normalised(), scale, NORMALISED) ;
+			IHistogram rawHist = (this.getHistAtScaleOfType(scale,RAW)) ;
+			this.setHistAtScaleOfType(rawHist.getCopyNormalised(), scale, NORMALISED) ;
 		}		
 	}
 	
 	
 	public void frequencies(){
 		for( HistogramScale scale: OUR_SCALES){
-			RGBPixelHist rawHist = (this.getHistAtScaleOfType(scale,RAW)) ;
-			this.setHistAtScaleOfType(rawHist.frequencies(), scale, FREQUENCIES) ;
+			IHistogram rawHist = (this.getHistAtScaleOfType(scale,RAW)) ;
+			this.setHistAtScaleOfType(rawHist.getCopyFrequencies(), scale, FREQUENCIES) ;
 		}		
 	}	
 	
 	public void entropies(){
 		for( HistogramScale scale: OUR_SCALES){
-			RGBPixelHist rawHist = (this.getHistAtScaleOfType(scale,RAW)) ;
-			this.setHistAtScaleOfType(rawHist.entropies(), scale, ENTROPIES) ;
+			IHistogram rawHist = (this.getHistAtScaleOfType(scale,RAW)) ;
+			this.setHistAtScaleOfType(rawHist.getCopyEntropies(), scale, ENTROPIES) ;
 		}		
 	}		
 
@@ -140,14 +143,29 @@ public class ImageCharacteriser {
 		this.entropies() ;
 	}	
 
+
 	
 	public IndexedValue[] findIndicesOfMostAndLeastSimilarAtScale(ImageCharacteriser[] pCharacterisers,HistogramScale pScale,HistogramType pType){
 
-		IndexedValue[] result = new IndexedValue[2] ;
+		IndexedValue[] result = null ;
+		if(pCharacterisers.length != 0){
+			result = new IndexedValue[2] ;
+		} else {
+			int foo = -1 ;
+		}
 		// 0<- min, 1<-max 
 		//TODO: use a map and enum'd keys instead?
-		result[0] = new IndexedValue(-1,Double.MAX_VALUE) ;
-		result[1] = new IndexedValue(-1,Double.MIN_VALUE) ;
+		// Min:
+		result[0] = new IndexedValue(-1,Double.POSITIVE_INFINITY ) ;
+		// Max:
+		// Double.MIN_VALUE is the smallest <em>positive</em>value 
+		// that can be held in a double, not -1*Double.MAX_VALUE:
+		result[1] = new IndexedValue(-1, Double.NEGATIVE_INFINITY  ) ;
+		
+		double[] vals = new double[pCharacterisers.length] ;
+		Arrays.fill(vals, -23.0) ;
+		
+		boolean touchedMax = false ;
 		
 		for(int i=0;i<pCharacterisers.length;++i){
 			// Avoid treating self as another---note that this is not .equals(),
@@ -161,15 +179,21 @@ public class ImageCharacteriser {
 			// training up the recogniser, e.g. find out that frequency distance works best at coarse
 			// level but entropic angle best at fine?
 			double val = this.angleAtScaleOfType(pCharacterisers[i], pScale, pType) ;
+			
+			// System.out.println(""+i+": "+result[0].dValue+"---"+val+"---"+result[1].dValue) ;
+			
+			vals[i] = val ;
+			
 			// Bias toward first-found results, so "<"/">", not "<="/">" or ">="/"<":
 			if( val < result[0].dValue){
 				result[0].dValue = val ;
 				result[0].nIndex = i ;
 			}
 			if( val > result[1].dValue){
-				result[1].dValue = val ;
-				result[1].nIndex = i ;
-			}		
+					result[1].dValue = val ;
+					result[1].nIndex = i ;
+					touchedMax = true ;
+			} 
 		}
 
 		return result ;		
