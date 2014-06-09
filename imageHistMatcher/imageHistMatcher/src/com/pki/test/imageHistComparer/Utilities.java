@@ -3,13 +3,18 @@ package com.pki.test.imageHistComparer;
 
 public class Utilities {
 
-	public enum HistogramScale {
+	public static enum HistogramScale {
 		COARSE,FINE
 	}
 	
-	public enum HistogramType {
+	public static  enum HistogramType {
 		RAW,NORMALISED,FREQUENCIES,ENTROPIES
-	}	
+	}
+	
+	
+	public static enum PixelRep {
+		RGB,HSV,YUV
+	}
 
 	public final static int RAD_TO_INTEGRAL_DEGREES(double pVal){
 		return (int) Math.round(Math.toDegrees(pVal)) ; 
@@ -27,6 +32,5 @@ public class Utilities {
 		}
 		return s ;
 	}
-	
-	
+		
 }

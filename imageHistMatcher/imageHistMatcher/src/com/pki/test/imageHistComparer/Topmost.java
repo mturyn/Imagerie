@@ -17,13 +17,14 @@ import javax.imageio.ImageIO;
 
 import com.pki.test.imageHistComparer.Utilities.HistogramScale;
 import com.pki.test.imageHistComparer.Utilities.HistogramType;
-import com.pki.test.imageHistComparer.histogram.ImageCharacteriser;
+import com.pki.test.imageHistComparer.histogram.RGBImageCharacteriser;
+import com.pki.test.imageHistComparer.histogram.YUVImageCharacteriser;
 
 
 public class Topmost extends Component {
 	private static final long serialVersionUID = "com.pki.test.imageHistComparer".hashCode();
 	
-
+	YUVImageCharacteriser characteriser ;
 	
 	public Topmost(String pFileSpec) {
 
@@ -32,7 +33,7 @@ public class Topmost extends Component {
 		} catch (IOException ioe) {
 			System.out/*err*/.println("Error i/o: " + ioe);
 		}
-		characteriser = new ImageCharacteriser(img);
+		characteriser = new YUVImageCharacteriser(img);
 		fileName = pFileSpec;
 		System.out/*err*/.println(fileName);
 	}	
@@ -54,16 +55,15 @@ public class Topmost extends Component {
 	public static HistogramScale[] OUR_SCALES = {COARSE,FINE}  ;
 	public static HistogramType[] OUR_TYPES = {RAW,NORMALISED,FREQUENCIES,ENTROPIES}  ;	
 
-	ImageCharacteriser characteriser ;
 	
 	public IndexedValue[] findIndicesOfMostAndLeastSimilarAtScale(
 			Topmost[] pTopmosts,
 			HistogramScale pScale,
 			HistogramType pType
 			){
-		ImageCharacteriser[] characterisers = new ImageCharacteriser[pTopmosts.length];
+		YUVImageCharacteriser[] characterisers = new YUVImageCharacteriser[pTopmosts.length];
 		for(int i=0;i<characterisers.length;++i){
-			characterisers[i] = pTopmosts[i].characteriser ;
+			characterisers[i] = pTopmosts[i].characteriser ;  
 		}
 		return this.characteriser.findIndicesOfMostAndLeastSimilarAtScale(characterisers,pScale,pType) ;
 	}	

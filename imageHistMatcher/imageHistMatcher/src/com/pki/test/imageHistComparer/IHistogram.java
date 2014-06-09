@@ -1,6 +1,9 @@
-package com.pki.test.imageHistComparer.histogram;
+package com.pki.test.imageHistComparer;
 
 import java.util.TreeSet;
+
+// TODO: abstract the pixel class:
+import com.pki.test.imageHistComparer.histogram.ColorspaceBlock;
 
 public interface IHistogram {
 
@@ -12,9 +15,15 @@ public interface IHistogram {
 	 * @param pGreen [0,255] pixel green value
 	 * @param pBlue[0,255] pixel blue value
 	 */
-	public abstract void addPixel(int pRed, int pGreen, int pBlue);
+	// Generalising to an int[] would be better, but not at all
+	// necessary...and at that point, maybe we wouldn't want int[]s....
+	//public abstract void addPixel(int pChannel0, int pChannel1, int pChannel2);
+	public abstract void addPixel(int[] pChannels);
 
 	public abstract double getValue(int pBinRed, int pBinGreen, int pBinBlue);
+	
+	public abstract int[] getMeshes() ;
+	public abstract int[] getNBins() ;	
 
 	public abstract IHistogram setValue(int pBinRed, int pBinGreen,
 			int pBinBlue, double pVal);
@@ -51,7 +60,7 @@ public interface IHistogram {
 
 	public abstract IHistogram getCopyEntropies();
 
-	public abstract TreeSet<RGBPixelsBin> orderedBinsDescending();
+	public abstract TreeSet<ColorspaceBlock> orderedBinsDescending();
 
 	public abstract String getStringThresholded(double pThreshold);
 
