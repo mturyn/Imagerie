@@ -1,20 +1,19 @@
 package com.mturyn.imageHistComparer.histogram.comparators;
 
-import java.util.Map ;
-import java.util.HashMap ;
+import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.ANGLE;
+import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.MATCHES;
+import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.ONE_MINUS_COSINE;
+import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.VECTOR_DISTANCE;
 
-import com.mturyn.imageHistComparer.IHistCharacteriserDistance ;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.mturyn.imageHistComparer.IHistCharacteriserDistance;
+import com.mturyn.imageHistComparer.IHistogram;
 import com.mturyn.imageHistComparer.IImageCharacteriser;
-import com.mturyn.imageHistComparer.IHistogram ;
+import com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod;
 import com.mturyn.imageHistComparer.Utilities.HistogramScale;
 import com.mturyn.imageHistComparer.Utilities.HistogramType;
-import com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod ;
-
-import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.MATCHES ;
-import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.VECTOR_DISTANCE ;
-import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.ANGLE ;
-import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.ONE_MINUS_COSINE ;
-import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.MATCHES ;
 
 
 // MATCHES,ENTROPY,ANGLE,ONE_MINUS_COSINE,FREQUENCY

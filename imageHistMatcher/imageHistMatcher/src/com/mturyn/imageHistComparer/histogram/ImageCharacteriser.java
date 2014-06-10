@@ -340,7 +340,7 @@ public class ImageCharacteriser<T extends IHistogram> implements IImageCharacter
 	
 	
 	/**
-	 * Another way of getting a distance from another characteriser's hist:
+	 * Another way of getting a distance from another mCharacteriser's hist:
 	 * How many of the frequency values are close to the other's?
 	 */
 	public int getFrequencyMatchPercentageAtScale(IImageCharacteriser pOther,HistogramScale pScale, double dWindowHalfHeight){

@@ -1,7 +1,8 @@
 package com.mturyn.imageHistComparer.histogram;
 
-import com.mturyn.imageHistComparer.IHistogram;
 import java.util.TreeSet;
+
+import com.mturyn.imageHistComparer.IHistogram;
 
 ;
 

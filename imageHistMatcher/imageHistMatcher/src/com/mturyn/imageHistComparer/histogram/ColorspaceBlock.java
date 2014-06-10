@@ -1,6 +1,5 @@
 package com.mturyn.imageHistComparer.histogram;
 
-import java.util.TreeSet ;
 
 /**
  * This class exists to simplify ordering rectangular solids in colorspace by their

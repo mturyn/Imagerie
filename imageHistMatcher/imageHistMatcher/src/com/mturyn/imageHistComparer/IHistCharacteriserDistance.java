@@ -1,19 +1,8 @@
 package com.mturyn.imageHistComparer;
 
 
-import java.util.Map ;
-import java.util.HashMap ;
-import java.util.Collections ;
-
-import com.mturyn.imageHistComparer.Utilities.HistogramScale ;
-import com.mturyn.imageHistComparer.Utilities.HistogramType ;
-import com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod ;
-
-
-import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.MATCHES ;
-import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.ANGLE  ;
-import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.VECTOR_DISTANCE ;
-import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.ONE_MINUS_COSINE ;
+import com.mturyn.imageHistComparer.Utilities.HistogramScale;
+import com.mturyn.imageHistComparer.Utilities.HistogramType;
 
 
 /*

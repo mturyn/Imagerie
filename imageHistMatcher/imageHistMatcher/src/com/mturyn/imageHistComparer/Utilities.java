@@ -12,7 +12,7 @@ public class Utilities {
 	}
 	
 	public static enum HistogramDistanceMethod {
-		MATCHES,VECTOR_DISTANCE,ANGLE,ONE_MINUS_COSINE
+		MATCHES,VECTOR_DISTANCE,VECTOR_EUCLIDEAN_DISTANCE,ANGLE,ONE_MINUS_COSINE
 	}
 		
 	public static enum PixelRep {

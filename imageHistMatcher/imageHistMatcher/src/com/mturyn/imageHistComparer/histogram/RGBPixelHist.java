@@ -1,15 +1,10 @@
 package com.mturyn.imageHistComparer.histogram;
 
+import static com.mturyn.imageHistComparer.Utilities.LN2;
 import static com.mturyn.imageHistComparer.Utilities.HistogramScale.COARSE;
 import static com.mturyn.imageHistComparer.Utilities.HistogramScale.FINE;
 
-import static com.mturyn.imageHistComparer.Utilities.LN2 ;
-
-import java.util.Arrays;
-
 import com.mturyn.imageHistComparer.IHistogram;
-
-import com.mturyn.imageHistComparer.IndexedValue;
 import com.mturyn.imageHistComparer.Utilities.HistogramScale;
 
 

@@ -1,6 +1,5 @@
 package com.mturyn.imageHistComparer.histogram;
 
-import static com.mturyn.imageHistComparer.Utilities.LN2;
 import static com.mturyn.imageHistComparer.Utilities.RAD_TO_INTEGRAL_DEGREES;
 
 import java.util.Arrays;
@@ -8,7 +7,6 @@ import java.util.HashMap;
 import java.util.TreeSet;
 
 import com.mturyn.imageHistComparer.IHistogram;
-import com.mturyn.imageHistComparer.Utilities;
 import com.mturyn.imageHistComparer.Utilities.HistogramScale;
 
 public abstract class AbstractPixelHist implements IHistogram {
@@ -74,7 +72,6 @@ public abstract class AbstractPixelHist implements IHistogram {
 		
 		// For this iteration, assume histograms are structurally identical
 		// (scales, number of bins at different scales, data types at scale):
-		double d=-1 ;
 		for(int binR=0;binR<nBins[0];++binR){
 			for(int binG=0;binG<nBins[1];++binG){
 				for(int binB=0;binB<nBins[2];++binB){
@@ -87,6 +84,31 @@ public abstract class AbstractPixelHist implements IHistogram {
 		return result ;
 	}
 	
+	@Override
+	public double euclideanDistance(IHistogram pOtherHist) {
+		/**
+		 * TODO: work out a better way of iterating over all channels, or just represent as a 1-D vector
+		 * (say, via and ArrayList, or a TreeSet if we wanted to order by value).
+		 */
+		double result = -1d ;
+		double accumulator = 0d ;
+		
+		// For this iteration, assume histograms are structurally identical
+		// (scales, number of bins at different scales, data types at scale):
+		for(int binR=0;binR<nBins[0];++binR){
+			for(int binG=0;binG<nBins[1];++binG){
+				for(int binB=0;binB<nBins[2];++binB){
+					double delta = getValue(binR,binG,binB) -  pOtherHist.getValue(binR,binG,binB);
+					accumulator += Math.abs(delta) ;
+				}
+			}	
+		}
+		
+		
+		result = Math.sqrt(accumulator) ;
+		return result ;
+	}
+		
 	
 	/**
 	 *  Return the number of matches (value within a given limit from our value)
@@ -141,7 +163,6 @@ public abstract class AbstractPixelHist implements IHistogram {
 		
 		// For this iteration, assume histograms are structurally identical
 		// (scales, number of bins at different scales, data types at scale):
-		double d=-1 ;
 		for(int binR=0;binR<nBins[0];++binR){
 			for(int binG=0;binG<nBins[1];++binG){
 				for(int binB=0;binB<nBins[2];++binB){
@@ -157,7 +178,6 @@ public abstract class AbstractPixelHist implements IHistogram {
 		double result = -1d ;
 		double accumulator = 0d ;
 	
-		double d=-1 ;
 		for(int binR=0;binR<nBins[0];++binR){
 			for(int binG=0;binG<nBins[1];++binG){
 				for(int binB=0;binB<nBins[2];++binB){
@@ -172,10 +192,6 @@ public abstract class AbstractPixelHist implements IHistogram {
 
 	@Override
 	public double cosine(IHistogram pOtherHist) {
-		double _d = this.distance(pOtherHist) ;
-		double _l = this.length() ;
-		double _lO = pOtherHist.length() ;
-		
 		return this.dotProduct(pOtherHist)/(this.length()*pOtherHist.length() ) ;
 	}
 

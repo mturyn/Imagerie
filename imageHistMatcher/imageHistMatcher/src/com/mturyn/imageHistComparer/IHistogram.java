@@ -2,8 +2,8 @@ package com.mturyn.imageHistComparer;
 
 import java.util.TreeSet;
 
-import com.mturyn.imageHistComparer.histogram.ColorspaceBlock ;
-import com.mturyn.imageHistComparer.Utilities.HistogramScale ;
+import com.mturyn.imageHistComparer.Utilities.HistogramScale;
+import com.mturyn.imageHistComparer.histogram.ColorspaceBlock;
 
 // TODO: abstract the pixel class:
 
@@ -31,6 +31,8 @@ public interface IHistogram {
 			int pBinBlue, double pVal);
 
 	public abstract double distance(IHistogram pOtherHist);
+	
+	public double euclideanDistance(IHistogram pOtherHist) ;	
 	
 	public int percentMatches(IHistogram pOtherHist, double dWindowHalfHeight) ;
 
