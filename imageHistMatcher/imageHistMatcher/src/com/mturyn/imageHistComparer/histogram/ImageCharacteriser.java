@@ -1,12 +1,6 @@
 package com.mturyn.imageHistComparer.histogram;
 
 import static com.mturyn.imageHistComparer.Utilities.RAD_TO_INTEGRAL_DEGREES;
-
-
-import com.mturyn.imageHistComparer.Utilities.HistogramScale;
-import com.mturyn.imageHistComparer.Utilities.HistogramType;
-import com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod ;
-
 import static com.mturyn.imageHistComparer.Utilities.HistogramScale.COARSE;
 import static com.mturyn.imageHistComparer.Utilities.HistogramScale.FINE;
 import static com.mturyn.imageHistComparer.Utilities.HistogramType.ENTROPIES;
@@ -14,25 +8,20 @@ import static com.mturyn.imageHistComparer.Utilities.HistogramType.FREQUENCIES;
 import static com.mturyn.imageHistComparer.Utilities.HistogramType.NORMALISED;
 import static com.mturyn.imageHistComparer.Utilities.HistogramType.RAW;
 
-// comparison modes
-import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.ANGLE ;
-import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.DOT_PRODUCT_DISTANCE ;
-import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.MATCHES ;
-import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.ONE_MINUS_COSINE ;
-
-
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.util.Arrays;
 import java.util.HashMap;
 
-
+import com.mturyn.imageHistComparer.IHistCharacteriserDistance;
 import com.mturyn.imageHistComparer.IHistogram;
 import com.mturyn.imageHistComparer.IImageCharacteriser;
-import com.mturyn.imageHistComparer.IHistCharacteriserDistance;
 import com.mturyn.imageHistComparer.IndexedValue;
-
-import com.mturyn.imageHistComparer.histogram.comparators.AbstractDistance ;
+import com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod;
+import com.mturyn.imageHistComparer.Utilities.HistogramScale;
+import com.mturyn.imageHistComparer.Utilities.HistogramType;
+import com.mturyn.imageHistComparer.histogram.comparators.AbstractDistance;
+// comparison modes
 
 /**
  * @author mturyn 

@@ -3,7 +3,7 @@ package com.mturyn.imageHistComparer.histogram.comparators;
 import com.mturyn.imageHistComparer.IHistogram;
 
 /**
- * A singleton used to be able to pick a particular 'distance' operator for historgrams:
+ * A singleton used to be able to pick a particular 'distance' operator for histograms:
  * @author mturyn
  *
  */

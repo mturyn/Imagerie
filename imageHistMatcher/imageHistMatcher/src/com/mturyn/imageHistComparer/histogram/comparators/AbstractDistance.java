@@ -11,7 +11,7 @@ import com.mturyn.imageHistComparer.Utilities.HistogramType;
 import com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod ;
 
 import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.MATCHES ;
-import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.DOT_PRODUCT_DISTANCE ;
+import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.VECTOR_DISTANCE ;
 import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.ANGLE ;
 import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.ONE_MINUS_COSINE ;
 import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.MATCHES ;
@@ -39,7 +39,7 @@ public abstract class AbstractDistance implements IHistCharacteriserDistance {
 		//DISTANCE_METHOD_MAP.put( DISTANCE, .getInstance() ) ;
 		DISTANCE_METHOD_MAP.put( ANGLE, Angle.getInstance() ) ;
 		DISTANCE_METHOD_MAP.put( ONE_MINUS_COSINE, OneMinusCosineDistance.getInstance() ) ;
-		DISTANCE_METHOD_MAP.put( DOT_PRODUCT_DISTANCE, DotProductDistance.getInstance() ) ;
+		DISTANCE_METHOD_MAP.put( VECTOR_DISTANCE, VectorDistance.getInstance() ) ;
 	}
 	
 	public static IHistCharacteriserDistance getDistancerForName(HistogramDistanceMethod pName ){

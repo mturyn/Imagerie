@@ -12,7 +12,7 @@ import com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod ;
 
 import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.MATCHES ;
 import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.ANGLE  ;
-import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.DOT_PRODUCT_DISTANCE ;
+import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.VECTOR_DISTANCE ;
 import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.ONE_MINUS_COSINE ;
 
 

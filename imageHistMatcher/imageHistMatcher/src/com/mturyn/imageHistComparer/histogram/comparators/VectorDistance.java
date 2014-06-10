@@ -3,19 +3,24 @@ package com.mturyn.imageHistComparer.histogram.comparators;
 import com.mturyn.imageHistComparer.IHistogram;
 
 /**
- * A singleton used to be able to pick a particular 'distance' operator for historgrams:
+ * A singleton used to be able to pick a particular 'distance' operator for histograms.
+ * 
+ * Yes, it really should be OrthogonalVectorDistance, but that's too long, and
+ * I haven't introduced and metric-involved dot-products yet (though correlations 
+ * between near colours might be expressible thereby...)
+ *
  * @author mturyn
  *
  */
-public class DotProductDistance extends AbstractDistance {
+public class VectorDistance extends AbstractDistance {
 
-	static DotProductDistance INSTANCE  ; 
-	private DotProductDistance(){} ;
+	static VectorDistance INSTANCE  ; 
+	private VectorDistance(){} ;
 	
 	// Not worried about synchronisation for now...but why not?
-	public static DotProductDistance getInstance(){
+	public static VectorDistance getInstance(){
 			if(INSTANCE==null){
-				INSTANCE = new DotProductDistance() ;
+				INSTANCE = new VectorDistance() ;
 			}
 		return INSTANCE ;
 	}
