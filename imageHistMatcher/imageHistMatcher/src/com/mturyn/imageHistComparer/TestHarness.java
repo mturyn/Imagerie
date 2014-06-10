@@ -339,23 +339,39 @@ public class TestHarness<T extends IHistogram> extends Component {
 
 		System.out.println('\r') ;
 
-</OLDER_TESTS> */
+</OLDER_TESTS> 
+	*/			
 
-		// Testing method much like what we'll want soon:
+		// Testing method much like this distance-matrix we'd want to score against 
+		// human evaluations of difference:
 		for (int j = 0; j < nImages; ++j) {
-			System.out/*err*/.println(labels[j]+':') ;			
+			System.out.println(labels[j]+':') ;			
 			for(HistogramType typ: OUR_TYPES){	
 				for (HistogramScale scale : OUR_SCALES) {
 					IndexedValue[] analysis 
 						= instances[j].findIndicesOfMostAndLeastSimilarAtScale(instances,scale,typ) ;
-					System.out/*err*/.println("\t"+scale+" / "+typ  ) ;
-					System.out/*err*/.println("\t\tMin: " +labels[ analysis[0].nIndex]+": "+ (int)(analysis[0].dValue) ) ;	
-					System.out/*err*/.println("\t\tMax: " +labels[ analysis[1].nIndex]+": "+ (int)(analysis[1].dValue) ) ;
-					System.out/*err*/.println("") ;
+					System.out.println("\t"+scale+" / "+typ  ) ;
+					System.out.println("\t\tMin: " +labels[ analysis[0].nIndex]+": "+ (int)(analysis[0].dValue) ) ;	
+					System.out.println("\t\tMax: " +labels[ analysis[1].nIndex]+": "+ (int)(analysis[1].dValue) ) ;
+					System.out.println("") ;
 				}
 			}
-			System.out/*err*/.println("") ;
+			System.out.println("") ;
+	}
+
+
+			
+		
+		
+		
+		
+		
 		}
+	
+	
+	
+	
+	
 		
 	}
 
