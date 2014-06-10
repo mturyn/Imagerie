@@ -1,4 +1,4 @@
-package com.pki.test.imageHistComparer;
+package com.mturyn.imageHistComparer;
 
 /**
  * More like a struct than anything else, for the moment at least:

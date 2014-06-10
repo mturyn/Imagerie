@@ -1,4 +1,4 @@
-package com.pki.test.imageHistComparer;
+package com.mturyn.imageHistComparer;
 
 
 public class Utilities {
@@ -7,11 +7,14 @@ public class Utilities {
 		COARSE,FINE
 	}
 	
-	public static  enum HistogramType {
+	public static enum HistogramType {
 		RAW,NORMALISED,FREQUENCIES,ENTROPIES
 	}
 	
-	
+	public static enum HistogramDistanceMethod {
+		MATCHES,DOT_PRODUCT_DISTANCE,ANGLE,ONE_MINUS_COSINE
+	}
+		
 	public static enum PixelRep {
 		RGB,HSV,YUV
 	}

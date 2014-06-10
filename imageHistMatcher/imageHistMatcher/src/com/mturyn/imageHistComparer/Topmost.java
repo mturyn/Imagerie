@@ -1,11 +1,11 @@
-package com.pki.test.imageHistComparer;
+package com.mturyn.imageHistComparer;
 
-import static com.pki.test.imageHistComparer.Utilities.HistogramScale.COARSE;
-import static com.pki.test.imageHistComparer.Utilities.HistogramScale.FINE;
-import static com.pki.test.imageHistComparer.Utilities.HistogramType.ENTROPIES;
-import static com.pki.test.imageHistComparer.Utilities.HistogramType.FREQUENCIES;
-import static com.pki.test.imageHistComparer.Utilities.HistogramType.NORMALISED;
-import static com.pki.test.imageHistComparer.Utilities.HistogramType.RAW;
+import static com.mturyn.imageHistComparer.Utilities.HistogramScale.COARSE;
+import static com.mturyn.imageHistComparer.Utilities.HistogramScale.FINE;
+import static com.mturyn.imageHistComparer.Utilities.HistogramType.ENTROPIES;
+import static com.mturyn.imageHistComparer.Utilities.HistogramType.FREQUENCIES;
+import static com.mturyn.imageHistComparer.Utilities.HistogramType.NORMALISED;
+import static com.mturyn.imageHistComparer.Utilities.HistogramType.RAW;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -15,25 +15,33 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import com.pki.test.imageHistComparer.Utilities.HistogramScale;
-import com.pki.test.imageHistComparer.Utilities.HistogramType;
-import com.pki.test.imageHistComparer.histogram.RGBImageCharacteriser;
-import com.pki.test.imageHistComparer.histogram.YUVImageCharacteriser;
+import com.mturyn.imageHistComparer.Utilities.HistogramScale;
+import com.mturyn.imageHistComparer.Utilities.HistogramType;
+import com.mturyn.imageHistComparer.IImageCharacteriser ;
+// import com.mturyn.imageHistComparer.histogram.RGBImageCharacteriser;
+// import com.mturyn.imageHistComparer.histogram.YUVImageCharacteriser;
+import com.mturyn.imageHistComparer.histogram.ImageCharacteriser;
+import com.mturyn.imageHistComparer.histogram.RGBPixelHist ;
+import com.mturyn.imageHistComparer.histogram.YUVPixelHist ;
 
 
-public class Topmost extends Component {
-	private static final long serialVersionUID = "com.pki.test.imageHistComparer".hashCode();
+//public class Topmost<T extends RGBImageCharacteriser> extends Component {
+public class Topmost<T extends IHistogram> extends Component {
+	private static final long serialVersionUID = "com.mturyn.imageHistComparer".hashCode();
 	
-	YUVImageCharacteriser characteriser ;
+	ImageCharacteriser<T> characteriser ;
 	
-	public Topmost(String pFileSpec) {
+	public Topmost(String pFileSpec,T pHistInstance) {
 
 		try {
 			img = ImageIO.read(new File(pFileSpec));
 		} catch (IOException ioe) {
-			System.out/*err*/.println("Error i/o: " + ioe);
+			System.err.println("Error i/o: " + ioe+": reading"+pFileSpec);
 		}
-		characteriser = new YUVImageCharacteriser(img);
+		//characteriser = pBlankCharacteriser ; 
+		characteriser = new ImageCharacteriser<T>(pHistInstance) ;
+		characteriser.populateFromBufferedImage( img ) ;
+		
 		fileName = pFileSpec;
 		System.out/*err*/.println(fileName);
 	}	
@@ -61,7 +69,7 @@ public class Topmost extends Component {
 			HistogramScale pScale,
 			HistogramType pType
 			){
-		YUVImageCharacteriser[] characterisers = new YUVImageCharacteriser[pTopmosts.length];
+		IImageCharacteriser[] characterisers = new IImageCharacteriser[pTopmosts.length];
 		for(int i=0;i<characterisers.length;++i){
 			characterisers[i] = pTopmosts[i].characteriser ;  
 		}
@@ -93,12 +101,13 @@ public class Topmost extends Component {
 		String[] labels = new String[nImages];
 
 		for (int j = 0; j < nImages; ++j) {
-			instances[j] = new Topmost(argv[j]);
+			instances[j] = new Topmost<YUVPixelHist>(argv[j],new YUVPixelHist());
+			//instances[j] = new Topmost<YUVPixelHist>(argv[j],new YUVPixelHist());
 			labels[j] = argv[j].substring(1 + argv[j].lastIndexOf('/'));
 			System.out.println("Image " + j + "<--" + argv[j]);
 		}
 		System.out.println('\r');
-
+/* <OLDER_TESTS>
 		double minValue = Double.MAX_VALUE;
 		double maxValue = Double.MIN_VALUE;
 		String minLabel = "Bad initial String instance.";
@@ -106,7 +115,7 @@ public class Topmost extends Component {
 
 		// In a real system this would turn into part of a unit-test:
 		System.out.println("\rSelf-distance:");
-		for (com.pki.test.imageHistComparer.Utilities.HistogramScale scale : OUR_SCALES) {
+		for (com.mturyn.imageHistComparer.Utilities.HistogramScale scale : OUR_SCALES) {
 			System.out.println("\tScale: " + scale);
 			// for(HistogramType typ: OUR_TYPES){
 			HistogramType typ = NORMALISED;
@@ -208,7 +217,8 @@ public class Topmost extends Component {
 						}
 					}
 				}
-				System.out/*err*/.println(minLabel + '\r' + maxLabel + '\r');
+				//.err for red in Eclipse console window:
+				System.out.println(minLabel + '\r' + maxLabel + '\r');
 			}
 			// }
 		}
@@ -241,7 +251,7 @@ public class Topmost extends Component {
 								+ "Max:  " + labels[j] + " vs " + labels[k] +": "+val ;
 					}
 				}
-				System.out/*err*/.println(minLabel + '\r' + maxLabel + '\r');
+				System.out.println(minLabel + '\r' + maxLabel + '\r');
 			}
 			// }
 
@@ -287,7 +297,7 @@ public class Topmost extends Component {
 								+ "Max:  " + labels[j] + " vs " + labels[k] +": "+val ;
 					}
 				}
-				System.out/*err*/.println(minLabel + '\r' + maxLabel + '\r');
+				System.out.println(minLabel + '\r' + maxLabel + '\r');
 			}
 			// }
 		}
@@ -324,12 +334,14 @@ public class Topmost extends Component {
 				}
 			}
 			// }
-			System.out/*err*/.println(minLabel + '\r' + maxLabel + '\r');
+			System.out.println(minLabel + '\r' + maxLabel + '\r');
 		}
 
-		System.out/*err*/.println('\r') ;
-		// Testing method much like what we'll want soon:
+		System.out.println('\r') ;
 
+</OLDER_TESTS> */
+
+		// Testing method much like what we'll want soon:
 		for (int j = 0; j < nImages; ++j) {
 			System.out/*err*/.println(labels[j]+':') ;			
 			for(HistogramType typ: OUR_TYPES){	
@@ -337,8 +349,8 @@ public class Topmost extends Component {
 					IndexedValue[] analysis 
 						= instances[j].findIndicesOfMostAndLeastSimilarAtScale(instances,scale,typ) ;
 					System.out/*err*/.println("\t"+scale+" / "+typ  ) ;
-					System.out/*err*/.println("\t\tMin: " +labels[ analysis[0].nIndex]+": "+ analysis[0].dValue) ;	
-					System.out/*err*/.println("\t\tMax: " +labels[ analysis[1].nIndex]+": "+ analysis[1].dValue) ;
+					System.out/*err*/.println("\t\tMin: " +labels[ analysis[0].nIndex]+": "+ (int)(analysis[0].dValue) ) ;	
+					System.out/*err*/.println("\t\tMax: " +labels[ analysis[1].nIndex]+": "+ (int)(analysis[1].dValue) ) ;
 					System.out/*err*/.println("") ;
 				}
 			}

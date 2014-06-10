@@ -1,9 +1,11 @@
-package com.pki.test.imageHistComparer;
+package com.mturyn.imageHistComparer;
 
 import java.util.TreeSet;
 
+import com.mturyn.imageHistComparer.histogram.ColorspaceBlock ;
+import com.mturyn.imageHistComparer.Utilities.HistogramScale ;
+
 // TODO: abstract the pixel class:
-import com.pki.test.imageHistComparer.histogram.ColorspaceBlock;
 
 public interface IHistogram {
 
@@ -29,6 +31,8 @@ public interface IHistogram {
 			int pBinBlue, double pVal);
 
 	public abstract double distance(IHistogram pOtherHist);
+	
+	public int percentMatches(IHistogram pOtherHist, double dWindowHalfHeight) ;
 
 	/**
 	 *  We're storing in a matrix, but we're treating it as a vector
@@ -59,6 +63,10 @@ public interface IHistogram {
 	public abstract IHistogram getCopyFrequencies();
 
 	public abstract IHistogram getCopyEntropies();
+	
+	public abstract IHistogram createHistAtScale(HistogramScale pScale) ;
+	
+	public abstract void initialise(int[] pNBins, int[] pMeshes) ;
 
 	public abstract TreeSet<ColorspaceBlock> orderedBinsDescending();
 

@@ -1,16 +1,16 @@
-package com.pki.test.imageHistComparer.histogram;
+package com.mturyn.imageHistComparer.histogram;
 
-import static com.pki.test.imageHistComparer.Utilities.HistogramScale.COARSE;
-import static com.pki.test.imageHistComparer.Utilities.HistogramScale.FINE;
+import static com.mturyn.imageHistComparer.Utilities.HistogramScale.COARSE;
+import static com.mturyn.imageHistComparer.Utilities.HistogramScale.FINE;
 
-import static com.pki.test.imageHistComparer.Utilities.LN2 ;
+import static com.mturyn.imageHistComparer.Utilities.LN2 ;
 
 import java.util.Arrays;
 
-import com.pki.test.imageHistComparer.IHistogram;
+import com.mturyn.imageHistComparer.IHistogram;
 
-import com.pki.test.imageHistComparer.IndexedValue;
-import com.pki.test.imageHistComparer.Utilities.HistogramScale;
+import com.mturyn.imageHistComparer.IndexedValue;
+import com.mturyn.imageHistComparer.Utilities.HistogramScale;
 
 
 
@@ -58,20 +58,15 @@ public class RGBPixelHist extends AbstractPixelHist implements IHistogram {
 
 	
 	private RGBPixelHist(int[] pNBins, int[] pMeshes){
-		nBins = Arrays.copyOf(pNBins,pNBins.length) ;
-		meshes = Arrays.copyOf(pMeshes,pMeshes.length) ;		
-		
-		// These would need be initialised if I decide I need to start each bin with
-		// a count of (say) 1 in order to avoid divides-by-zero without testing for them,		
-		data = new double[nBins[0]][nBins[1]][nBins[2]] ;
-		// ...in which example I would initialise the total count to 64:
-		nTotalCount = 0 ;
+		this() ;
+		initialise(pNBins,pMeshes) ;
 	}
 	
-	public static RGBPixelHist createHist(HistogramScale pScale) {
-		RGBPixelHist result = new RGBPixelHist(SCALE_DETAILS_NBINS.get(pScale),SCALE_DETAILS_MESHES.get(pScale)) ;
-		return result ;
-	}		
+
+	@Override
+	public IHistogram  createHistAtScale(HistogramScale pScale){
+		return new RGBPixelHist(SCALE_DETAILS_NBINS.get(pScale),SCALE_DETAILS_MESHES.get(pScale)) ;
+	}
 	
 	/* Used in testing
 	public RGBPixelHist(BufferedImage pImage, int[] pBins, int[] pMeshes){

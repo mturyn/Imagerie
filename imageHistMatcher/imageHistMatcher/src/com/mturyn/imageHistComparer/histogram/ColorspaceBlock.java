@@ -1,4 +1,4 @@
-package com.pki.test.imageHistComparer.histogram;
+package com.mturyn.imageHistComparer.histogram;
 
 import java.util.TreeSet ;
 
@@ -13,7 +13,7 @@ import java.util.TreeSet ;
  * @author mturyn
  * 
  */
-public class ColorspaceBlock implements Comparable {
+public class ColorspaceBlock implements Comparable<ColorspaceBlock> {
 
 	// 'Bindex'=='bin index':
 	public int[] binIndices ={-1,-1,-1} ;
@@ -27,17 +27,13 @@ public class ColorspaceBlock implements Comparable {
 		value = pValue ;
 	}
 	
-	@Override
-	public int compareTo(Object pO) {
-		int result = 0 ;
-		// TODO: Make less dangerous for general use, 
-		// though this isn't so in the demo:
-		assert pO instanceof ColorspaceBlock : "Something is seriously wrong." ; 
-		ColorspaceBlock bin = (ColorspaceBlock) pO ;
+
+	public int compareTo(ColorspaceBlock pOther) {
+		int result = -30 ;
 		// Want descending order, by default:
-		if(this.value < bin.value){
+		if(this.value < pOther.value){
 			result = 1 ;
-		} else if(this.value > bin.value){
+		} else if(this.value > pOther.value){
 			result = -1 ;
 		} else {
 			result = 0 ;
