@@ -377,9 +377,3 @@ public class TestHarness<T extends IHistogram> extends Component {
 
 
 
-
-
-
-
-
-}
