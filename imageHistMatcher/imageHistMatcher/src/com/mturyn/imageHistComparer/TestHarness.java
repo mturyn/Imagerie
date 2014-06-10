@@ -25,13 +25,13 @@ import com.mturyn.imageHistComparer.histogram.RGBPixelHist ;
 import com.mturyn.imageHistComparer.histogram.YUVPixelHist ;
 
 
-//public class Topmost<T extends RGBImageCharacteriser> extends Component {
-public class Topmost<T extends IHistogram> extends Component {
+//public class TestHarness<T extends RGBImageCharacteriser> extends Component {
+public class TestHarness<T extends IHistogram> extends Component {
 	private static final long serialVersionUID = "com.mturyn.imageHistComparer".hashCode();
 	
 	ImageCharacteriser<T> characteriser ;
 	
-	public Topmost(String pFileSpec,T pHistInstance) {
+	public TestHarness(String pFileSpec,T pHistInstance) {
 
 		try {
 			img = ImageIO.read(new File(pFileSpec));
@@ -65,7 +65,7 @@ public class Topmost<T extends IHistogram> extends Component {
 
 	
 	public IndexedValue[] findIndicesOfMostAndLeastSimilarAtScale(
-			Topmost[] pTopmosts,
+			TestHarness[] pTopmosts,
 			HistogramScale pScale,
 			HistogramType pType
 			){
@@ -88,7 +88,7 @@ public class Topmost<T extends IHistogram> extends Component {
 		 * WindowAdapter(){ public void windowClosing(WindowEvent e) {
 		 * System.exit(0); } });
 		 * 
-		 * f.add(new Topmost()); f.pack(); f.setVisible(true);
+		 * f.add(new TestHarness()); f.pack(); f.setVisible(true);
 		 */
 
 		/*
@@ -97,12 +97,12 @@ public class Topmost<T extends IHistogram> extends Component {
 		 * System.out.println(hist.getNormalisedString(1,100,1)) ;
 		 */
 		int nImages = Math.min(6, argv.length);
-		Topmost[] instances = new Topmost[nImages];
+		TestHarness[] instances = new TestHarness[nImages];
 		String[] labels = new String[nImages];
 
 		for (int j = 0; j < nImages; ++j) {
-			instances[j] = new Topmost<YUVPixelHist>(argv[j],new YUVPixelHist());
-			//instances[j] = new Topmost<YUVPixelHist>(argv[j],new YUVPixelHist());
+			instances[j] = new TestHarness<YUVPixelHist>(argv[j],new YUVPixelHist());
+			//instances[j] = new TestHarness<YUVPixelHist>(argv[j],new YUVPixelHist());
 			labels[j] = argv[j].substring(1 + argv[j].lastIndexOf('/'));
 			System.out.println("Image " + j + "<--" + argv[j]);
 		}
