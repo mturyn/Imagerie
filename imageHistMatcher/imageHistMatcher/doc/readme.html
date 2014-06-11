@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<!--  
+'I won't throw down my gun until everyone else throws down theirs.'
+---some guy who got shot.
+Copyright (c) 2014 Michael Turyn; all rights reserved.
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<title>Readme</title>
+</head>
+<body>
+ 2014-06-10
+ <p>
+ A test of this can be found in <code></code>com.mturyn.imageHistComparer.test.TestHarness.main()</code>.
+ It will compare up to six local images (full filespecs, please), by default by looking at something-like-clusters in RGB colorspace, but YUV if the first arguments are <code>--representation YUV</code>  &nbsp;.</p>
+ <blockquote>Example:<br/> &nbsp;&nbsp;&nbsp;<code>java <i>[paths/flags]</i></i>com.mturyn.imageHistComparer.test.TestHarness --representation YUV 
+ \<br/>&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp; c:/lychees-and-lasers_0.jpg c:/lychees-and-lasers_1.jpg  
+ \<br/>&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp; c:/picasso-0.jpg c:/picasso-1.jpg  
+ \<br/>&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp; c:/rembrandt126.JPG   c:/joodsebruidje.jpeg  </code></blockquote>
+ 
+<p> I considered using a pre-made package and concentrating on the
+front- and back-ends, but I wanted the reader to see <em>my</em>
+work at a basic level...and I've never had any trouble using
+someone else's decent API, once the classes embodying it are
+properly visible (which I'll admit has sometimes been hairy in
+Eclipse)...I'm happiest at the middle and its interactions with
+the other tiers. Also, extant packages at which I looked didn't
+seem to include code for determining the <em>least</em> similar
+image, so I'd need to get that machinery written myself anyway. (I
+briefly considered trying to find an image transform <code>T</code>
+on an image <code>I</code> such that<br>
+) </p>
+<blockquote> <code>furthest(I) == nearest(T·I)</code> </blockquote>
+...but I thought that would likely be a rabbit-hole. On reflexion, I
+think I should have used a standard package to create the
+histograms---this would likely be able to handle [e.g.] Windows
+bitmap files instead of just png and jpeg JFIF and files), as
+getting those right (and extensibly so) took much more time than I
+expected. Just getting histograms of one sort (e.g., in RGB space,
+with settable granularities) would be simple, but I wanted something
+I could extend...because I wanted to at least lay the foundation for
+a machine-learning component that would train up to match human
+evaluations of picture similarity and difference, so I wanted to be
+able to slot-in different colorspace (or transforms beside
+quantised) coordinates, 'distance' algorithms....
+<p></p>
+<p> Immediately I thought that whatever histogram classifier with
+which I might come up, the more accurate it would be, the more
+complex the db query, and so I decided that there should be a
+coarse-grained query to trim the problem space, and then a
+finer-grained one restricted to those passing the coarse cut. My
+first draft was wrong-headed because I was trying to create a
+representation with two histograms built-in---not easily
+extensible, and after some flailing that I didn't recognise
+quickly enough (but next time...) as a sign that my design were
+wrong I refactored, leading to the following structure: </p>
+<blockquote> <code> an AnalysedImage&lt;IHistogram&gt; wraps an
+IImageCharacteriser&lt;IHistogram&gt;<br>
+an IImageCharacteriser&lt;IHistogram&gt; contains 1+ IHistogram
+</code> </blockquote>
+...where by <code>IHistogram</code> and <code>IImageCharacteriser</code>
+I mean an implementor of that interface, and will mean similarly in
+the case of any name beginning with an <code>I</code> unless
+otherwise noted.
+<p></p>
+<p>
+An <code>IHistogram</code> implementor stores values in cubes of
+(e.g.) RGB space...so far, at least, I'm not using separate 1-D
+R,G,and B histograms, just (for N bins for each of the R,G, and B
+values) N^3 cubes. So far I'm treating them as components of
+N^3-dimensional vectors in that just happen to be stored indexed
+by three channels, and distances (accurate and euclidean),
+cosines, counting how many of the two's components fuzzily match
+defined in that space.&nbsp; An <code>IImageCharacteriser</code>
+initially holds the raw counts (how many pixels are in the cube)
+in one <code>IHistogram</code> , derived values
+(frequencies---not of light, but the fraction of the total count
+in a given cube, entropies derived from the frequency values, and
+(though this isn't being used now) values normalised in the
+{N^3}-space.&nbsp; Just the raw values need to be stored, though,
+thinking of many look-ups that might be sent via
+web-services.&nbsp; In particular, the coarse view, in which I
+divide each color channel in two, for 8 cubes, is both not that
+expensive and so far seems like a decent first cut---it can tell
+that any of Picasso's blue period I've checked are more like each
+other than any of a couple of Rembrandts or two pictures I took of
+the same laser illuminating the same lychee fruit.....<br>
+</p>
+<p>This representation, though it doesn't fail at finer
+granularities (I've tested 4 bands for each colour channel), is
+almost certainly not optimal there, as it retains a lot of
+information probably not needed.&nbsp; Colours in representations
+of real life are clustered, and ideally we would characterise an
+image by its clusters...each well-populated cube has so far been 
+treated as an independent cluster with a centroid in the middle 
+of the cube, but clusters really should be found as multiple 
+adjacent cubes, and their centroids and radii comparable as well 
+as their values.</p>
+
+<p></p>For a first step, I might look for
+them by thresholding the finer-grained representation and looking
+for clusters all of which are in a small range of values; the
+coarse cut is essentially looking for cubes containing one or more
+significant clusters. I know that there are many schemes for
+determining clusters, and if I go forward it would be to see which
+of the adequately effective were cheapest to run and its
+representation to store.<br>
+
+</body>
+</html>
