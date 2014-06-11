@@ -7,7 +7,7 @@ import com.mturyn.imageHistComparer.Utilities.HistogramScale;
 import com.mturyn.imageHistComparer.Utilities.HistogramType;
 //import com.mturyn.imageHistComparer.histogram.RGBImageCharacteriser;
 
-public interface IImageCharacteriser {
+public interface  IImageCharacteriser {	public static final String COPYRIGHT_STRING ="'I won't throw down my gun until everyone else throws down theirs.'\r---some guy who got shot.\rCopyright (c) 2014 Michael Turyn; all rights reserved.";
 
 	// Generalising to an int[] would be better, but not at all
 	// necessary...and at that point, maybe we wouldn't want ints....

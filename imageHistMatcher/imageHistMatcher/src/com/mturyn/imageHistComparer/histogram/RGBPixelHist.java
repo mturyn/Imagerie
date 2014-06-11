@@ -30,7 +30,7 @@ import com.mturyn.imageHistComparer.Utilities.HistogramScale;
  * I'd really like: a cluster analysis to determine a short signature for the image:
  * 
  */
-public class RGBPixelHist extends AbstractPixelHist implements IHistogram {
+public class RGBPixelHist extends AbstractPixelHist implements IHistogram {	public static final String COPYRIGHT_STRING ="'I won't throw down my gun until everyone else throws down theirs.'\r---some guy who got shot.\rCopyright (c) 2014 Michael Turyn; all rights reserved.";
 
 	static {
 		SCALE_DETAILS_NBINS.put(COARSE, NBINS_COARSE ) ;

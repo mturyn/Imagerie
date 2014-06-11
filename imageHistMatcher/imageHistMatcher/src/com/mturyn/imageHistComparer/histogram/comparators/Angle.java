@@ -7,7 +7,7 @@ import com.mturyn.imageHistComparer.IHistogram;
  * @author mturyn
  *
  */
-public class Angle extends AbstractDistance {
+public class Angle extends AbstractDistance {	public static final String COPYRIGHT_STRING ="'I won't throw down my gun until everyone else throws down theirs.'\r---some guy who got shot.\rCopyright (c) 2014 Michael Turyn; all rights reserved.";
 
 	static Angle INSTANCE  ; 
 	private Angle(){} ;

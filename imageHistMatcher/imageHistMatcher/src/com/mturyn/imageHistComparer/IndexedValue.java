@@ -5,7 +5,7 @@ package com.mturyn.imageHistComparer;
  * @author mturyn
  *
  */
-public class IndexedValue {
+public class IndexedValue {	public static final String COPYRIGHT_STRING ="'I won't throw down my gun until everyone else throws down theirs.'\r---some guy who got shot.\rCopyright (c) 2014 Michael Turyn; all rights reserved.";
 
 	public int nIndex = -1 ;
 	public double dValue = -1 ;

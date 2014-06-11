@@ -7,7 +7,7 @@ import com.mturyn.imageHistComparer.histogram.ColorspaceBlock;
 
 // TODO: abstract the pixel class:
 
-public interface IHistogram {
+public interface  IHistogram {	public static final String COPYRIGHT_STRING ="'I won't throw down my gun until everyone else throws down theirs.'\r---some guy who got shot.\rCopyright (c) 2014 Michael Turyn; all rights reserved.";
 
 	/**
 	 * Add an RGB pixel to whatever internal data representation is

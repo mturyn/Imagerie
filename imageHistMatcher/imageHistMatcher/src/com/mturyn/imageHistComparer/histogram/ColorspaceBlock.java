@@ -12,7 +12,7 @@ package com.mturyn.imageHistComparer.histogram;
  * @author mturyn
  * 
  */
-public class ColorspaceBlock implements Comparable<ColorspaceBlock> {
+public class ColorspaceBlock implements Comparable<ColorspaceBlock> {	public static final String COPYRIGHT_STRING ="'I won't throw down my gun until everyone else throws down theirs.'\r---some guy who got shot.\rCopyright (c) 2014 Michael Turyn; all rights reserved.";
 
 	// 'Bindex'=='bin index':
 	public int[] binIndices ={-1,-1,-1} ;

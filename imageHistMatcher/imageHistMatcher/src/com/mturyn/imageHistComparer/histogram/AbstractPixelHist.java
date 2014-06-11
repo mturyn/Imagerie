@@ -9,7 +9,7 @@ import java.util.TreeSet;
 import com.mturyn.imageHistComparer.IHistogram;
 import com.mturyn.imageHistComparer.Utilities.HistogramScale;
 
-public abstract class AbstractPixelHist implements IHistogram {
+public abstract class AbstractPixelHist implements IHistogram {	public static final String COPYRIGHT_STRING ="'I won't throw down my gun until everyone else throws down theirs.'\r---some guy who got shot.\rCopyright (c) 2014 Michael Turyn; all rights reserved.";
 
 	protected static int[] NBINS_COARSE = {2,2,2};
 	protected static int[] NBINS_FINE = {4,4,4};
@@ -121,13 +121,13 @@ public abstract class AbstractPixelHist implements IHistogram {
 	@Override
 	public int percentMatches(IHistogram pOtherHist, double dFractionaLWindow){
 		
-		int result = -29 ;
+		int result = 0 ;
 		
 		double matchesCount = 0 ;
 		double dTotalBins = nBins[0]*nBins[1]*nBins[2] ;
 		// Trivial case, use object reference equality:
 		if(this==pOtherHist){
-			result = 23 ;//100 ;
+			result = 100 ;
 		} else {
 			double maxDiff = Math.abs(dFractionaLWindow) ;
 			// For this iteration, assume histograms are structurally identical
@@ -140,10 +140,7 @@ public abstract class AbstractPixelHist implements IHistogram {
 							double otherValue = pOtherHist.getValue(binR,binG,binB) ;
 							double delta = otherValue - thisValue ;
 							double mean = (thisValue+otherValue)/2.0d ;
-							if(delta == 0){
-								delta = 0d ;
-								++matchesCount ;
-							} else {
+							if( mean != 0){
 								delta = Math.abs(delta/mean) ;
 								if( delta <= maxDiff){
 									++matchesCount ;

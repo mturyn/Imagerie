@@ -7,7 +7,7 @@ import com.mturyn.imageHistComparer.IHistogram;
  * @author mturyn
  *
  */
-public class MatchesCountDistance extends AbstractDistance {
+public class MatchesCountDistance extends AbstractDistance {	public static final String COPYRIGHT_STRING ="'I won't throw down my gun until everyone else throws down theirs.'\r---some guy who got shot.\rCopyright (c) 2014 Michael Turyn; all rights reserved.";
 
 	static MatchesCountDistance INSTANCE  ; 
 	private MatchesCountDistance(){} ;

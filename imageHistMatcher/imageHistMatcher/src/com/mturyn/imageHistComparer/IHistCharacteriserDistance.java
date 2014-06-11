@@ -17,7 +17,7 @@ import com.mturyn.imageHistComparer.Utilities.HistogramType;
  * by having humans decide which images look most and least alike and 
  * training a system to match that as well as possible. (Mechanical Turk?)
  */
-public interface IHistCharacteriserDistance {
+public interface  IHistCharacteriserDistance {	public static final String COPYRIGHT_STRING ="'I won't throw down my gun until everyone else throws down theirs.'\r---some guy who got shot.\rCopyright (c) 2014 Michael Turyn; all rights reserved.";
 	
 	/**
 	 * 

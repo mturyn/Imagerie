@@ -15,7 +15,7 @@ import com.mturyn.imageHistComparer.IHistogram;
  * 
  */
 
-public class ColorspaceBlockClusterSeeker {
+public class ColorspaceBlockClusterSeeker {	public static final String COPYRIGHT_STRING ="'I won't throw down my gun until everyone else throws down theirs.'\r---some guy who got shot.\rCopyright (c) 2014 Michael Turyn; all rights reserved.";
 
 	public IHistogram container;
 

@@ -4,6 +4,7 @@ import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.ANG
 import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.MATCHES;
 import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.ONE_MINUS_COSINE;
 import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.VECTOR_DISTANCE;
+import static com.mturyn.imageHistComparer.Utilities.HistogramDistanceMethod.VECTOR_EUCLIDEAN_DISTANCE;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +19,7 @@ import com.mturyn.imageHistComparer.Utilities.HistogramType;
 
 // MATCHES,ENTROPY,ANGLE,ONE_MINUS_COSINE,FREQUENCY
 
-public abstract class AbstractDistance implements IHistCharacteriserDistance {
+public abstract class AbstractDistance implements IHistCharacteriserDistance {	public static final String COPYRIGHT_STRING ="'I won't throw down my gun until everyone else throws down theirs.'\r---some guy who got shot.\rCopyright (c) 2014 Michael Turyn; all rights reserved.";
 	
 	public AbstractDistance(){} ;
 
@@ -35,10 +36,10 @@ public abstract class AbstractDistance implements IHistCharacteriserDistance {
 			new HashMap<HistogramDistanceMethod, IHistCharacteriserDistance>() ;
 	static {
 		DISTANCE_METHOD_MAP.put( MATCHES, MatchesCountDistance.getInstance() ) ;
-		//DISTANCE_METHOD_MAP.put( DISTANCE, .getInstance() ) ;
 		DISTANCE_METHOD_MAP.put( ANGLE, Angle.getInstance() ) ;
 		DISTANCE_METHOD_MAP.put( ONE_MINUS_COSINE, OneMinusCosineDistance.getInstance() ) ;
 		DISTANCE_METHOD_MAP.put( VECTOR_DISTANCE, VectorDistance.getInstance() ) ;
+		DISTANCE_METHOD_MAP.put( VECTOR_EUCLIDEAN_DISTANCE, VectorEuclideanDistance.getInstance() ) ;
 	}
 	
 	public static IHistCharacteriserDistance getDistancerForName(HistogramDistanceMethod pName ){

@@ -46,7 +46,7 @@ import com.mturyn.imageHistComparer.histogram.comparators.AbstractDistance;
  * a 
  * metric used to calculate the dot-product.
  */
-public class ImageCharacteriser<T extends IHistogram> implements IImageCharacteriser {
+public class ImageCharacteriser<T extends IHistogram> implements IImageCharacteriser {	public static final String COPYRIGHT_STRING ="'I won't throw down my gun until everyone else throws down theirs.'\r---some guy who got shot.\rCopyright (c) 2014 Michael Turyn; all rights reserved.";
 
 	
 	// Index histogram views by pre-defined scales and data-types:
